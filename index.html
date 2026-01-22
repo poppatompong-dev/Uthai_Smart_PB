@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uthai Thani Smart PA | ระบบจัดการเสียงไร้สายอัจฉริยะ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f0f2f5; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+        main { flex-grow: 1; position: relative; z-index: 10; }
+        
+        /* Background Watermark */
+        .bg-watermark {
+            position: fixed;
+            inset: 0;
+            background-image: url('https://img5.pic.in.th/file/secure-sv1/ChatGPT-Image-Jan-21-2026-10_02_28-PM.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.25;
+            z-index: 0;
+            pointer-events: none;
+            filter: grayscale(20%);
+        }
+
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.5); }
+        .nav-link.active { color: #1e40af; border-bottom: 2px solid #1e40af; font-weight: 600; }
+        
+        .hero-pattern { background: transparent; position: relative; overflow: hidden; z-index: 10; }
+
+        /* Enhanced Map Marker Styles */
+        .custom-div-icon { background: transparent; border: none; }
+        .marker-pin {
+            position: relative;
+            width: 48px; height: 48px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center bottom;
+        }
+        .marker-pin:hover { transform: scale(1.3) translateY(-8px); z-index: 9999 !important; }
+        .marker-number {
+            position: absolute;
+            top: 42%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: 900; 
+            color: #b91c1c;
+            pointer-events: none;
+            font-family: 'Kanit', sans-serif;
+            z-index: 20;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .spa-view { display: none; }
+        .spa-view.active { display: block; animation: slideUp 0.5s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        #map { height: 75vh; width: 100%; border-radius: 2.5rem; box-shadow: 0 25px 50px -12px rgba(30, 64, 175, 0.15); border: 8px solid white; z-index: 1; }
+        #miniMap { height: 200px; width: 100%; border-radius: 1.5rem; border: 2px solid #e2e8f0; margin-top: 10px; z-index: 1; }
+        
+        .stat-card { transition: all 0.3s; cursor: pointer; border-radius: 2.5rem; border: 1px solid #f1f5f9; background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); }
+        .stat-card:hover { transform: translateY(-8px); box-shadow: 0 25px 30px -10px rgba(30, 64, 175, 0.1); border-color: #1e40af; }
+        .stat-card.active-filter { border: 3px solid #1e40af; background-color: #eff6ff; }
+        
+        .tab-btn.active { border-bottom: 3px solid #1e40af; color: #1e40af; font-weight: 600; }
+
+        .filter-btn.active { background-color: #1e40af; color: white; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+        /* Print Styles - Full Page Control */
+        @media print {
+            @page { size: A4; margin: 10mm; }
+            body, html { width: 100%; height: 100%; overflow: visible !important; background: white !important; }
+            body > * { display: none !important; } /* Hide everything */
+            
+            /* Explicitly show active modal content */
+            #fullDetailModal:not(.hidden), #reportModal:not(.hidden) {
+                display: block !important;
+                position: static !important;
+                width: 100% !important;
+                height: auto !important;
+                background: white !important;
+                box-shadow: none !important;
+                border: none !important;
+                inset: auto !important;
+            }
+            
+            #fullDetailContent, #reportModal > div {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+            
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<div class="bg-watermark"></div>
+
+<div id="loading" class="loading-overlay fixed inset-0 bg-white/95 z-[9999] flex items-center justify-center">
+    <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p class="mt-4 text-blue-900 font-bold tracking-tight">กำลังเชื่อมต่อฐานข้อมูล Cloud...</p>
+        <p class="text-xs text-slate-400 mt-2">Firebase Firestore Integration</p>
+    </div>
+</div>
+
+<header class="glass sticky top-0 z-[2000] no-print">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center space-x-4 cursor-pointer" onclick="showView('landing')">
+            <img src="https://img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg" alt="Logo" class="h-12 w-12 object-contain bg-white rounded-lg shadow-sm border border-slate-100 p-0.5">
+            <div>
+                <h1 class="font-bold text-xl text-blue-900 leading-tight">Uthai Thani Smart PA</h1>
+                <p class="text-[10px] text-blue-500 uppercase tracking-widest font-black">Municipality Control Hub</p>
+            </div>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+            <button onclick="showView('landing')" class="nav-link text-gray-500 hover:text-blue-800 transition py-2 font-medium"><i class="fas fa-home mr-1"></i> หน้าแรก</button>
+            <button onclick="showView('map')" class="nav-link text-gray-500 hover:text-blue-800 transition py-2 font-medium"><i class="fas fa-map-location-dot mr-1"></i> แผนที่</button>
+            <button onclick="showView('data')" class="nav-link text-gray-500 hover:text-blue-800 transition py-2 font-medium"><i class="fas fa-list-ol mr-1"></i> ทะเบียน</button>
+            <button onclick="showView('dashboard')" class="nav-link text-gray-500 hover:text-blue-800 transition py-2 font-medium"><i class="fas fa-chart-pie mr-1"></i> Insights</button>
+            <button onclick="showHub()" id="nav-hub" class="nav-link text-gray-500 hover:text-blue-800 transition py-2 font-medium"><i class="fas fa-th-large mr-1"></i> Hub</button>
+            <button onclick="showView('users')" id="nav-users" class="hidden nav-link text-gray-500 hover:text-blue-800 transition py-2 font-medium"><i class="fas fa-users-gear mr-1"></i> ผู้ใช้</button>
+            <button onclick="showView('developer')" class="nav-link text-gray-500 hover:text-blue-800 transition py-2 font-medium font-bold text-shadow-none"><i class="fas fa-code mr-1"></i> พัฒนา</button>
+        </nav>
+        <div class="flex items-center space-x-4">
+            <button onclick="window.openLogin()" id="loginBtn" class="bg-blue-800 text-white px-6 py-2.5 rounded-2xl text-sm font-bold hover:bg-blue-700 shadow-lg transition active:scale-95">
+                <i class="fas fa-user-lock mr-2"></i> เข้าสู่ระบบ
+            </button>
+            <div id="userProfile" class="hidden flex items-center space-x-3 bg-blue-50 p-1 pr-3 rounded-full border border-blue-100 shadow-sm">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-inner" id="userInitial">AD</div>
+                <div class="flex flex-col text-left">
+                    <span class="text-[10px] font-bold text-blue-900 uppercase leading-none" id="userNameDisplay">Admin</span>
+                    <span class="text-[9px] text-blue-400 font-medium leading-none uppercase" id="userRoleDisplay">Administrator</span>
+                </div>
+                <button onclick="window.logout()" class="ml-2 text-blue-300 hover:text-red-500 transition"><i class="fas fa-power-off"></i></button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="flex-grow no-print">
+    
+    <!-- 1. LANDING PAGE -->
+    <section id="view-landing" class="spa-view active relative">
+        <div class="absolute inset-0 bg-white/40 pointer-events-none z-0"></div>
+        <div class="hero-pattern py-24 px-6 border-b relative z-10">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16 relative z-20">
+                <div class="flex-1 space-y-8 relative z-10 text-center md:text-left">
+                    <div class="inline-flex items-center bg-green-100/90 backdrop-blur text-green-700 px-4 py-1 rounded-full text-xs font-bold tracking-wider uppercase shadow-sm border border-green-200">
+                        <i class="fas fa-database mr-2"></i> Cloud Database Connected
+                    </div>
+                    <h2 class="text-6xl font-black text-slate-900 leading-[1.1]">
+                        ระบบทะเบียน <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-500 text-5xl md:text-6xl">พิกัดลำโพงเทศบาล</span>
+                    </h2>
+                    <p class="text-slate-700 text-xl leading-relaxed max-w-lg mx-auto md:mx-0 font-medium bg-white/40 p-3 rounded-2xl backdrop-blur-sm shadow-sm">
+                        บริหารจัดการโครงข่ายเสียงไร้สายอัจฉริยะ รองรับข้อมูลเรียงลำดับ 1-104 พร้อมระบบรายงานผลที่แม่นยำและเชื่อมต่อข้อมูล Real-time
+                    </p>
+                    <div class="flex flex-wrap justify-center md:justify-start gap-4 pt-4 text-shadow-none">
+                        <button onclick="showView('dashboard')" class="bg-blue-800 text-white px-10 py-4 rounded-3xl font-bold shadow-2xl hover:bg-blue-700 transition transform hover:-translate-y-1 active:scale-95">
+                            <i class="fas fa-chart-line mr-2"></i> สรุปผล Insights
+                        </button>
+                        <button onclick="showView('data')" class="bg-white/90 backdrop-blur border-2 border-slate-200 text-slate-700 px-10 py-4 rounded-3xl font-bold hover:border-blue-800 hover:text-blue-800 transition active:scale-95">
+                            <i class="fas fa-list mr-2"></i> ดูทะเบียนพิกัด
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 hidden md:flex justify-center">
+                    <div class="relative bg-white/70 backdrop-blur-md p-12 rounded-[4rem] shadow-2xl border border-blue-50 text-shadow-none">
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="text-center group"><i class="fas fa-satellite-dish text-4xl text-blue-600 mb-2 group-hover:scale-110 transition duration-500"></i><p class="text-3xl font-black text-slate-800" id="landing-count">0</p><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-shadow-none">จุดติดตั้ง</p></div>
+                            <div class="text-center group"><i class="fas fa-check-circle text-4xl text-green-500 mb-2 group-hover:scale-110 transition duration-500"></i><p class="text-3xl font-black text-slate-800" id="landing-percent">0%</p><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-shadow-none">ความพร้อม</p></div>
+                            <div class="text-center group"><i class="fas fa-layer-group text-4xl text-purple-500 mb-2 group-hover:scale-110 transition duration-500"></i><p class="text-3xl font-black text-slate-800" id="landing-zones">0</p><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-shadow-none">เขตบริการ</p></div>
+                            <div class="text-center group"><i class="fas fa-tower-broadcast text-4xl text-cyan-500 mb-2 group-hover:scale-110 transition duration-500"></i><p class="text-3xl font-black text-slate-800" id="landing-olts">0</p><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-shadow-none">สถานี OLT</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. INSIGHTS / DASHBOARD (EXECUTIVE VIEW) -->
+    <section id="view-dashboard" class="spa-view p-6 md:p-12 text-shadow-none">
+        <div class="max-w-7xl mx-auto space-y-8 text-shadow-none">
+            
+            <!-- Header & Emergency -->
+            <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-200/50 pb-6">
+                <div class="bg-white/50 backdrop-blur-sm p-4 rounded-3xl">
+                    <h2 class="text-4xl font-black text-slate-900 tracking-tight text-shadow-none">Analytics Dashboard</h2>
+                    <p class="text-slate-500 font-medium text-shadow-none">สถิติภาพรวมและการกรองข้อมูลเชิงลึกรายสถานี OLT</p>
+                </div>
+                <div class="flex gap-4">
+                    <button class="bg-red-600 text-white px-6 py-3 rounded-2xl font-bold shadow-xl hover:bg-red-700 transition animate-pulse">
+                        <i class="fas fa-bullhorn mr-2"></i> ประกาศด่วน (Emergency)
+                    </button>
+                    <button onclick="window.openReportModal()" class="bg-blue-800 text-white px-8 py-3 rounded-2xl font-bold shadow-xl hover:bg-blue-700 transition">
+                        <i class="fas fa-file-invoice mr-2 text-lg"></i> รายงานผู้บริหาร
+                    </button>
+                </div>
+            </div>
+
+            <!-- Executive Summary & KPI -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="col-span-1 md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div onclick="applyDashFilter('all')" class="stat-card p-6 border shadow-sm text-center active-filter" id="filter-all"><p class="text-[10px] font-black text-slate-400 uppercase mb-2">จุดทั้งหมด</p><h3 class="text-3xl font-black text-slate-900" id="db-total">0</h3></div>
+                    <div onclick="applyDashFilter('Operational')" class="stat-card p-6 border shadow-sm text-center" id="filter-Operational"><p class="text-[10px] font-black text-green-500 uppercase mb-2">ปกติ (Online)</p><h3 class="text-3xl font-black text-green-600" id="db-ok">0</h3></div>
+                    <div onclick="applyDashFilter('Under Repair')" class="stat-card p-6 border shadow-sm text-center" id="filter-UnderRepair"><p class="text-[10px] font-black text-orange-500 uppercase mb-2">แจ้งซ่อม (Offline)</p><h3 class="text-3xl font-black text-orange-600" id="db-repair">0</h3></div>
+                    <div onclick="applyDashFilter('Moved')" class="stat-card p-6 border shadow-sm text-center" id="filter-Moved"><p class="text-[10px] font-black text-purple-400 uppercase mb-2">ย้ายจุด</p><h3 class="text-3xl font-black text-purple-600" id="db-moved">0</h3></div>
+                </div>
+                <div class="bg-white/80 backdrop-blur p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col justify-center">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">System KPI</h4>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-bold text-slate-700">Availability</span>
+                        <span class="text-sm font-black text-green-600">98.5%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2 mb-4"><div class="bg-green-500 h-2 rounded-full" style="width: 98.5%"></div></div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-bold text-slate-700">Success Rate</span>
+                        <span class="text-sm font-black text-blue-600">97.0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width: 97%"></div></div>
+                </div>
+            </div>
+
+            <!-- Operation Detail: Secondary Filters -->
+            <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                <button onclick="applyDashFilter('Old')" class="flex-shrink-0 bg-white border border-slate-200 px-6 py-2 rounded-xl text-xs font-bold text-blue-800 hover:bg-blue-50 transition">จุดติดตั้งเดิม (Old)</button>
+                <button onclick="applyDashFilter('New')" class="flex-shrink-0 bg-white border border-slate-200 px-6 py-2 rounded-xl text-xs font-bold text-cyan-600 hover:bg-cyan-50 transition">จุดติดตั้งใหม่ (New)</button>
+            </div>
+
+            <!-- Charts: Broadcast Analytics -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-shadow-none">
+                <div class="bg-white/90 backdrop-blur p-10 rounded-[3.5rem] shadow-sm border border-slate-100">
+                    <h4 class="font-black text-slate-800 mb-6 flex items-center text-shadow-none"><i class="fas fa-network-wired mr-2 text-blue-600"></i> จุดติดตั้งต่อสถานี OLT</h4>
+                    <canvas id="oltInsightChart" height="220"></canvas>
+                </div>
+                <div class="bg-white/90 backdrop-blur p-10 rounded-[3.5rem] shadow-sm border border-slate-100 text-shadow-none">
+                    <div class="flex justify-between items-center mb-6">
+                         <h4 class="font-black text-slate-800 flex items-center text-shadow-none"><i class="fas fa-chart-bar mr-2 text-purple-600"></i> สถิติการใช้งานเสียง</h4>
+                         <select class="bg-slate-50 border-none text-xs rounded-lg p-2 font-bold text-slate-500"><option>รายสัปดาห์</option><option>รายเดือน</option></select>
+                    </div>
+                    <canvas id="sizeDistChart" height="220"></canvas>
+                    <p class="text-center text-[10px] text-slate-400 mt-4">ข้อมูลเปรียบเทียบประเภทการประกาศ (ข่าวสาร/ฉุกเฉิน)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. DATA REGISTRY -->
+    <section id="view-data" class="spa-view p-6 md:p-12 text-shadow-none">
+        <div class="max-w-7xl mx-auto space-y-8 text-shadow-none">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                <div class="bg-white/60 backdrop-blur-sm p-6 rounded-[2rem] border border-white/50 shadow-sm">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tight text-shadow-none">Registry Console 
+                        <span class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full align-middle ml-2 shadow-sm" id="registry-count">Loading...</span>
+                    </h2>
+                    <p class="text-slate-500 font-medium italic mb-4">Sorting active: 1 to 104 (Numeric)</p>
+                    
+                    <div class="flex flex-wrap gap-2 text-shadow-none">
+                        <select id="sortOption" onchange="window.setSort(this.value)" class="bg-white border rounded-xl px-4 py-2 text-xs font-bold shadow-sm outline-none focus:border-blue-500 text-blue-800">
+                            <option value="number_asc">เรียงตามหมายเลข (น้อย-มาก)</option>
+                            <option value="number_desc">เรียงตามหมายเลข (มาก-น้อย)</option>
+                            <option value="zone">เรียงตามโซนพื้นที่</option>
+                            <option value="status">เรียงตามสถานะ</option>
+                        </select>
+                        <div class="w-px h-8 bg-slate-300 mx-1"></div>
+                        <select id="filterZone" onchange="filterData()" class="bg-white border rounded-xl px-4 py-2 text-xs font-bold shadow-sm outline-none focus:border-blue-500">
+                            <option value="">ทุกโซนพื้นที่</option>
+                            <option value="1">Zone 1</option><option value="2">Zone 2</option><option value="3">Zone 3</option><option value="4">Zone 4</option>
+                            <option value="5">Zone 5</option><option value="6">Zone 6</option><option value="7">Zone 7</option><option value="8">Zone 8</option>
+                        </select>
+                        <select id="filterType" onchange="filterData()" class="bg-white border rounded-xl px-4 py-2 text-xs font-bold shadow-sm outline-none focus:border-blue-500">
+                            <option value="">ทุกประเภท</option>
+                            <option value="Old">จุดดั้งเดิม</option><option value="New">จุดติดตั้งใหม่</option><option value="Moved">จุดย้ายพิกัด</option>
+                        </select>
+                        <select id="filterStatus" onchange="filterData()" class="bg-white border rounded-xl px-4 py-2 text-xs font-bold shadow-sm outline-none focus:border-blue-500">
+                            <option value="">ทุกสถานะ</option>
+                            <option value="Operational">พร้อมใช้งาน</option><option value="Under Repair">ขัดข้อง</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div id="admin-controls" class="hidden flex items-center gap-3 text-shadow-none">
+                        <button onclick="window.openPointModal()" class="bg-green-600 text-white px-6 py-3.5 rounded-2xl font-bold shadow-xl flex items-center active:scale-95 transition text-shadow-none"><i class="fas fa-plus mr-2"></i> เพิ่มพิกัดใหม่</button>
+                        <button onclick="document.getElementById('fileInput').click()" class="bg-blue-800 text-white px-6 py-3.5 rounded-2xl font-bold shadow-xl flex items-center active:scale-95 transition text-shadow-none"><i class="fas fa-file-import mr-2"></i> นำเข้า CSV</button>
+                        <input type="file" id="fileInput" class="hidden" accept=".csv" onchange="handleImport(event)">
+                    </div>
+                    <div class="relative group"><i class="fas fa-search absolute left-5 top-4 text-slate-300"></i><input type="text" id="searchInput" onkeyup="filterData()" placeholder="ค้นหาจุดติดตั้ง..." class="pl-12 pr-6 py-3.5 bg-white border-2 border-slate-100 rounded-2xl text-sm w-full md:w-80 focus:border-blue-500 outline-none transition shadow-sm"></div>
+                    <div class="bg-white border rounded-2xl flex p-1 shadow-sm text-shadow-none">
+                         <button onclick="setListView('table')" id="btn-table" class="p-2.5 px-4 bg-blue-100 text-blue-800 rounded-xl transition"><i class="fas fa-list"></i></button>
+                         <button onclick="setListView('card')" id="btn-card" class="p-2.5 px-4 text-slate-400 rounded-xl transition"><i class="fas fa-th-large"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white/90 backdrop-blur rounded-[3.5rem] shadow-xl overflow-hidden border border-slate-50 text-shadow-none">
+                <div id="registryContent"></div>
+                <div id="noDataMessage" class="hidden py-24 text-center text-shadow-none"><i class="fas fa-database text-6xl text-slate-100 mb-4 text-shadow-none"></i><p class="text-slate-400 font-bold uppercase">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. MAP VIEW -->
+    <section id="view-map" class="spa-view p-6 relative">
+        <div id="map"></div>
+        <div class="absolute top-10 left-10 z-[1000] flex flex-col space-y-2 no-print text-shadow-none">
+            <div class="bg-white p-1.5 rounded-2xl shadow-xl flex items-center space-x-1 border border-slate-100 text-shadow-none text-shadow-none text-shadow-none text-shadow-none">
+                <button onclick="window.setMapLayer('streets')" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-100 text-blue-800 transition shadow-sm" id="btn-streets">ROADMAP</button>
+                <button onclick="window.setMapLayer('satellite')" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 transition" id="btn-satellite">SATELLITE</button>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="window.openPointModal()" id="mapAddBtn" class="hidden bg-green-600 text-white w-12 h-12 rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 transition duration-300" title="เพิ่มจุดติดตั้ง"><i class="fas fa-plus"></i></button>
+                <button onclick="window.toggleBoundaryEdit()" id="boundaryBtn" class="hidden bg-purple-600 text-white w-12 h-12 rounded-2xl shadow-2xl flex items-center justify-center hover:scale-110 transition duration-300" title="วาดเขตพื้นที่"><i class="fas fa-pen-nib"></i></button>
+            </div>
+            <div id="boundaryControls" class="hidden bg-white p-3 rounded-2xl shadow-xl space-y-2">
+                <p class="text-xs font-bold text-purple-900">กำหนดเขตพื้นที่</p>
+                <p class="text-[10px] text-slate-500">คลิกบนแผนที่เพื่อเพิ่มจุด</p>
+                <button onclick="window.clearBoundary()" class="w-full bg-red-100 text-red-600 py-1 rounded text-xs font-bold">ล้างเส้น</button>
+                <button onclick="window.saveBoundary()" class="w-full bg-blue-800 text-white py-1 rounded text-xs font-bold">บันทึก</button>
+                <button onclick="window.deleteBoundary()" class="w-full bg-red-800 text-white py-1 rounded text-xs font-bold">ลบขอบเขต</button>
+            </div>
+            <!-- Filter Indicator -->
+            <div id="filterIndicator" class="hidden bg-white/90 shadow-lg rounded-2xl p-3 text-sm border border-slate-100 w-64">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] text-slate-400">Active Filter</div>
+                        <div id="filterIndicatorName" class="font-bold text-slate-800">All</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] text-slate-400">Results</div>
+                        <div id="filterIndicatorCount" class="font-black text-blue-800">0</div>
+                    </div>
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <button id="clearFilterBtn" onclick="clearDashFilter()" class="text-xs bg-red-50 text-red-600 px-3 py-1 rounded-full hover:bg-red-600 hover:text-white transition">ล้างฟิลเตอร์</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. USER MANAGEMENT -->
+    <section id="view-users" class="spa-view p-6 md:p-12 text-shadow-none">
+        <div class="max-w-4xl mx-auto space-y-8 text-shadow-none">
+            <div class="flex justify-between items-center bg-white/90 backdrop-blur p-10 rounded-[3rem] shadow-sm border">
+                <div><h2 class="text-3xl font-black text-slate-900 tracking-tight text-shadow-none">Authority Hub</h2><p class="text-slate-400 font-medium text-shadow-none">จัดการสิทธิ์เจ้าหน้าที่ (เพิ่ม/ลบ/แก้ไข User & Password)</p></div>
+                <button onclick="window.openUserModal()" class="w-14 h-14 bg-blue-800 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-blue-700 transition active:scale-95 text-shadow-none"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="userListContainer" class="grid gap-4"></div>
+        </div>
+    </section>
+
+    <!-- 6. DEVELOPER Hub -->
+    <section id="view-developer" class="spa-view p-6 md:p-12 text-shadow-none">
+        <div class="max-w-5xl mx-auto space-y-10">
+            <div class="flex items-center space-x-6 text-shadow-none bg-white/50 backdrop-blur-sm p-4 rounded-3xl w-fit">
+                 <div class="w-20 h-20 bg-blue-800 text-white rounded-[2rem] flex items-center justify-center text-3xl shadow-2xl text-shadow-none"><i class="fas fa-code"></i></div>
+                 <div><h2 class="text-4xl font-black text-slate-900 leading-tight">Developer Portal</h2><p class="text-slate-500 text-lg">Backend API Engine V4.8.6 (Stable)</p></div>
+            </div>
+            <div class="bg-white/90 backdrop-blur p-12 rounded-[3.5rem] shadow-xl border border-slate-100 space-y-8 text-shadow-none">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="text-left"><h3 class="font-bold text-2xl text-blue-900 uppercase text-shadow-none">Code.gs ตัวเต็มล่าสุด</h3><p class="text-sm text-slate-400 font-medium mt-2">ชุดโค้ดสำหรับ Google Apps Script รองรับ CRUD และ Drive API</p></div>
+                    <button onclick="window.copyCode()" id="copyBtn" class="bg-blue-800 text-white px-10 py-4 rounded-3xl font-black shadow-xl active:scale-95 transition text-shadow-none">คัดลอกโค้ด V4.8.6</button>
+                </div>
+                <pre id="codeBlock" class="bg-slate-900 text-blue-300 p-10 rounded-[2.5rem] text-[11px] overflow-auto max-h-[500px] font-mono custom-scrollbar text-shadow-none"></pre>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-white/90 backdrop-blur border-t py-16 mt-auto no-print text-shadow-none text-shadow-none text-shadow-none">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 items-center text-center">
+        <div class="space-y-4 md:text-left text-shadow-none text-shadow-none">
+            <div class="h-16 w-16 mx-auto md:mx-0 bg-blue-900 rounded-lg flex items-center justify-center text-white text-3xl">
+                <i class="fas fa-building-columns"></i>
+            </div>
+            <p class="text-blue-900 font-black text-2xl tracking-tight uppercase">Uthai Thani <span class="text-blue-500">Smart PA</span></p>
+            <p class="text-slate-400 text-xs font-medium tracking-tight">Smart Public Address Registry Management</p>
+        </div>
+        <div class="space-y-5 text-shadow-none">
+            <p class="text-blue-900 font-bold italic text-xl tracking-wide leading-relaxed text-shadow-none">"Intelligent Sound, Responsive Governance, <br>Connected Community"</p>
+            <div class="h-1 w-16 bg-blue-800 mx-auto rounded-full"></div>
+            <p class="text-slate-400 text-[10px] uppercase tracking-[0.4em] font-black text-shadow-none text-shadow-none">Developed by <span class="text-slate-700">นักวิชาการคอมพิวเตอร์ เทศบาลเมืองอุทัยธานี</span></p>
+        </div>
+        <div class="flex justify-center md:justify-end space-x-6 text-shadow-none">
+            <a href="#" class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-blue-800 hover:text-white transition shadow-sm text-shadow-none"><i class="fab fa-facebook-f text-lg"></i></a>
+            <a href="#" class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-blue-800 hover:text-white transition shadow-sm text-shadow-none text-shadow-none"><i class="fab fa-line text-lg"></i></a>
+        </div>
+    </div>
+</footer>
+
+<!-- Modals Area -->
+
+<!-- Full Detail Modal (Printable) -->
+<div id="fullDetailModal" class="hidden fixed inset-0 bg-white z-[8000] overflow-y-auto">
+    <div id="fullDetailContent" class="max-w-5xl mx-auto p-12 min-h-screen relative">
+        <button onclick="document.getElementById('fullDetailModal').classList.add('hidden')" class="absolute top-8 right-8 text-slate-400 hover:text-slate-800 no-print"><i class="fas fa-times text-4xl"></i></button>
+        <button onclick="window.triggerPrint()" class="absolute top-8 right-24 bg-blue-800 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 no-print"><i class="fas fa-print mr-2"></i>พิมพ์ (Print)</button>
+        
+        <!-- Printable Template -->
+        <div class="text-center mb-12 border-b-2 border-blue-900 pb-8">
+            <img src="https://img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg" class="h-24 mx-auto mb-4 grayscale">
+            <h1 class="text-3xl font-black text-slate-900 uppercase tracking-widest">แบบทะเบียนประวัติจุดติดตั้ง</h1>
+            <p class="text-slate-500 text-sm font-bold">เทศบาลเมืองอุทัยธานี (Smart PA System Registry)</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+            <div id="fd-images" class="grid grid-cols-2 gap-4">
+                <!-- Images injected here -->
+            </div>
+            <div class="space-y-6">
+                <div class="flex items-center space-x-4">
+                    <div class="w-20 h-20 bg-blue-900 text-white flex items-center justify-center text-2xl font-black rounded-2xl shadow-xl" id="fd-number">01</div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">POINT NUMBER</p>
+                        <h2 class="text-2xl font-black text-slate-900" id="fd-position">Location Name</h2>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">ZONE</p><p class="font-bold text-slate-800" id="fd-zone">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">INSTALL TYPE</p><p class="font-bold text-slate-800" id="fd-type">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">LATITUDE</p><p class="font-mono font-bold text-slate-800" id="fd-lat">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">LONGITUDE</p><p class="font-mono font-bold text-slate-800" id="fd-lng">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">OLT NODE</p><p class="font-bold text-slate-800" id="fd-olt">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">STATUS</p><p class="font-bold text-slate-800" id="fd-status">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">INVENTORY</p><p class="font-bold text-slate-800" id="fd-inventory">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border"><p class="text-[10px] text-slate-400 font-bold uppercase">SERIAL</p><p class="font-bold text-slate-800" id="fd-serial">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border col-span-2"><p class="text-[10px] text-slate-400 font-bold uppercase">SPEAKER INFO</p><p class="font-bold text-slate-800" id="fd-speaker-info">-</p></div>
+                    <div class="bg-slate-50 p-4 rounded-xl border col-span-2"><p class="text-[10px] text-slate-400 font-bold uppercase">REMARKS / NOTES</p><p class="font-bold text-slate-800" id="fd-notes">-</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <h3 class="text-xl font-bold text-slate-900 border-b pb-4 mb-6"><i class="fas fa-tools mr-2"></i>ประวัติการซ่อมบำรุง (Maintenance Log)</h3>
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-500 uppercase text-xs font-bold">
+                        <th class="p-4 rounded-l-xl">Date</th>
+                        <th class="p-4">Issue / Task</th>
+                        <th class="p-4 rounded-r-xl">Details</th>
+                    </tr>
+                </thead>
+                <tbody id="fd-maintenance-rows" class="divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+
+        <div class="text-center pt-12 border-t mt-12 text-xs text-slate-400 uppercase font-bold tracking-widest">
+            Generated by Uthai Thani Smart PA System • <span id="fd-print-date"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="hidden fixed inset-0 bg-slate-900/60 z-[5000] flex items-center justify-center p-6 backdrop-blur-md no-print text-shadow-none">
+    <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 shadow-2xl animate-slideUp text-shadow-none text-shadow-none text-shadow-none">
+        <div class="text-center space-y-2 mb-8">
+            <div class="w-16 h-16 bg-blue-50 text-blue-800 rounded-3xl flex items-center justify-center text-2xl mx-auto mb-4 text-shadow-none"><i class="fas fa-lock text-shadow-none"></i></div>
+            <h3 class="text-3xl font-black text-slate-900 tracking-tight text-shadow-none">Staff Access</h3>
+            <p class="text-slate-400 text-sm font-medium">กรุณายืนยันตัวตนเพื่อจัดการพิกัดระบบ</p>
+        </div>
+        <div class="space-y-4">
+            <input type="text" id="username" placeholder="Username" class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+            <input type="password" id="password" placeholder="Password" class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+            <button onclick="window.handleLogin()" class="w-full bg-blue-800 text-white py-5 rounded-2xl font-black shadow-xl active:scale-95 transition text-shadow-none">เข้าสู่ระบบ</button>
+            <button onclick="window.closeLogin()" class="w-full text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center mt-2">ยกเลิก</button>
+        </div>
+    </div>
+</div>
+
+<!-- User CRUD Modal -->
+<div id="userModal" class="hidden fixed inset-0 bg-slate-900/60 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print text-shadow-none">
+    <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-slideUp text-shadow-none">
+        <h3 id="userModalTitle" class="text-3xl font-black text-slate-900 mb-8 tracking-tight">Authority Account</h3>
+        <form id="userForm" onsubmit="window.saveUser(event)" class="space-y-5">
+            <input type="hidden" id="u-id">
+            <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-4">Full Name</label><input type="text" id="u-name" required class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none text-shadow-none text-shadow-none text-shadow-none"></div>
+            <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-4">Username</label><input type="text" id="u-username" required class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none text-shadow-none text-shadow-none"></div>
+            <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-4">Password</label><input type="password" id="u-password" required class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none"></div>
+            <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-4">Role</label><select id="u-role" class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none"><option value="Staff">Officer</option><option value="Admin">Administrator</option></select></div>
+            <div class="flex gap-4 pt-8 border-t mt-4 text-shadow-none text-shadow-none text-shadow-none">
+                <button type="submit" class="flex-1 bg-blue-800 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition text-shadow-none">บันทึกผู้ใช้</button>
+                <button type="button" onclick="window.closeUserModal()" class="text-slate-400 px-6 font-bold uppercase text-xs">ยกเลิก</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Point CRUD Modal -->
+<div id="pointModal" class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print text-shadow-none text-shadow-none text-shadow-none">
+    <div class="bg-white w-full max-w-4xl rounded-[3rem] p-10 shadow-2xl animate-slideUp overflow-y-auto max-h-[95vh] text-shadow-none text-shadow-none text-shadow-none">
+        <div class="flex justify-between items-center mb-8 border-b pb-4 text-shadow-none text-shadow-none">
+             <h3 id="modalTitle" class="text-3xl font-black text-slate-900 tracking-tight text-shadow-none">จัดการข้อมูลพิกัด</h3>
+             <button onclick="window.closePointModal()" class="text-slate-300 hover:text-slate-600 transition text-shadow-none text-shadow-none text-shadow-none"><i class="fas fa-times text-2xl text-shadow-none"></i></button>
+        </div>
+        <div class="flex space-x-6 mb-8 border-b text-sm overflow-x-auto">
+             <button onclick="window.setPointTab('general')" class="tab-btn active pb-3 px-2 text-shadow-none whitespace-nowrap" id="tab-general">ข้อมูลพื้นฐาน</button>
+             <button onclick="window.setPointTab('location')" class="tab-btn pb-3 px-2 text-shadow-none whitespace-nowrap" id="tab-location">พิกัดแผนที่</button>
+             <button onclick="window.setPointTab('media')" class="tab-btn pb-3 px-2 text-shadow-none whitespace-nowrap" id="tab-media">รูปภาพ</button>
+             <button onclick="window.setPointTab('maintenance')" class="tab-btn pb-3 px-2 text-shadow-none whitespace-nowrap" id="tab-maintenance">ประวัติซ่อม</button>
+        </div>
+        <form id="pointForm" onsubmit="window.savePoint(event)">
+            <input type="hidden" id="f-id">
+            
+            <!-- Tab 1: General Info -->
+            <div id="tab-content-general" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-shadow-none">
+                <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">หมายเลข (Number)</label><input type="number" id="f-number" required class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-shadow-none"></div>
+                <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">โซนพื้นที่ (Zone)</label>
+                    <select id="f-zone" required class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="1">Zone 1</option><option value="2">Zone 2</option><option value="3">Zone 3</option><option value="4">Zone 4</option>
+                        <option value="5">Zone 5</option><option value="6">Zone 6</option><option value="7">Zone 7</option><option value="8">Zone 8</option>
+                    </select>
+                </div>
+                <div class="col-span-2 space-y-1 text-shadow-none"><label class="text-[10px] font-black text-slate-400 uppercase ml-2 text-shadow-none">ตำแหน่ง Landmark</label><input type="text" id="f-position" required class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none text-shadow-none"></div>
+                <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">หมายเลขครุภัณฑ์ (Inventory No.)</label><input type="text" id="f-inv" class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none" placeholder="เช่น 12345-UT"/></div>
+                <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">เลขซีเรียล (Serial No.)</label><input type="text" id="f-serial" class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none" placeholder="เช่น SN-00001"/></div>
+                <div class="space-y-1 text-shadow-none"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">ประเภทการติดตั้ง</label><select id="f-install-type" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none"><option value="Old">จุดดั้งเดิม</option><option value="New">จุดติดตั้งใหม่</option><option value="Moved">จุดย้ายพิกัด</option></select></div>
+                <div class="space-y-1 text-shadow-none text-shadow-none"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">สถานี OLT</label>
+                    <select id="f-olt" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">เลือกสถานี OLT</option>
+                        <option value="OLT_เทคนิคอุทัยFTTx">OLT_เทคนิคอุทัยFTTx</option>
+                        <option value="OLT_อทัยธานี_C600">OLT_อทัยธานี_C600</option>
+                        <option value="อุทัยธานี (FTTx)">อุทัยธานี (FTTx)</option>
+                        <option value="Calix ปากกะบาด">Calix ปากกะบาด</option>
+                        <option value="Calix ศูนย์ราชการ">Calix ศูนย์ราชการ</option>
+                        <option value="OLT_NTหมอธิวา">OLT_NTหมอธิวา</option>
+                        <option value="OLT_แยกพระชนกFTTX">OLT_แยกพระชนกFTTX</option>
+                        <option value="Calix สค.อุทัยธานี">Calix สค.อุทัยธานี</option>
+                        <option value="OLT_แยก บขส.อน.FTTx">OLT_แยก บขส.อน.FTTx</option>
+                        <option value="OLT_เนินตูม">OLT_เนินตูม</option>
+                        <option value="ZTE บกภ.อุทัยธานี NT1">ZTE บกภ.อุทัยธานี NT1</option>
+                    </select>
+                </div>
+                <div class="space-y-1 text-shadow-none text-shadow-none"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">สถานะ</label><select id="f-status" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none"><option value="Operational">Operational (ปกติ)</option><option value="Under Repair">Under Repair (แจ้งซ่อม)</option></select></div>
+                <div class="space-y-1 flex gap-2">
+                    <div class="flex-1">
+                        <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ขนาดลำโพง</label>
+                        <select id="f-size" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="100">100 วัตต์</option>
+                            <option value="30">30 วัตต์</option>
+                        </select>
+                    </div>
+                    <div class="w-1/3">
+                        <label class="text-[10px] font-black text-slate-400 uppercase ml-2">จำนวน (ตัว)</label>
+                        <input type="number" id="f-amount" value="2" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none text-center outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="col-span-2 space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">หมายเหตุสั้นๆ</label><input type="text" id="f-remark" class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none" placeholder="หมายเหตุ เช่น สถานที่ติดตั้งพิเศษ"/></div>
+                <div class="col-span-2 space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">โน้ตเพิ่มเติม</label><textarea id="f-notes" class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none" rows="3" placeholder="บันทึกข้อมูลเพิ่มเติม..."></textarea></div>
+            </div>
+
+            <!-- Tab 2: Location -->
+            <div id="tab-content-location" class="hidden space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1 text-shadow-none"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">Latitude</label><input type="text" id="f-lat" required class="w-full bg-slate-50 border-none p-4 rounded-2xl"></div>
+                    <div class="space-y-1 text-shadow-none text-shadow-none"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">Longitude</label><input type="text" id="f-lng" required class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none"></div>
+                </div>
+                <p class="text-[10px] text-blue-600 font-bold uppercase"><i class="fas fa-info-circle mr-1"></i> ลากหมุดในแผนที่ด้านล่างเพื่อปรับตำแหน่งพิกัด</p>
+                <div id="miniMap"></div>
+            </div>
+
+            <!-- Tab 3: Media (Real Image Upload) -->
+            <div id="tab-content-media" class="hidden space-y-6">
+                <div class="bg-blue-50 p-4 rounded-2xl text-xs text-blue-800 mb-4 border border-blue-100 flex items-start">
+                    <i class="fas fa-info-circle mt-1 mr-2"></i>
+                    <div>
+                        <p class="font-bold">ระบบอัปโหลดรูปภาพ</p>
+                        <p>รองรับไฟล์ JPG/PNG ขนาดไม่เกิน 500KB ต่อรูป ระบบจะทำการย่อขนาดอัตโนมัติก่อนบันทึก</p>
+                    </div>
+                </div>
+                
+                <input type="file" id="imgInput" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="image-gallery-container">
+                    <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-dashed border-slate-200 text-center hover:bg-blue-50 hover:border-blue-300 transition cursor-pointer flex flex-col items-center justify-center min-h-[150px]" onclick="document.getElementById('imgInput').click()">
+                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 text-blue-500 text-xl"><i class="fas fa-plus"></i></div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">เพิ่มรูปภาพ</p>
+                    </div>
+                    <!-- Images will be injected here -->
+                </div>
+            </div>
+
+            <!-- Tab 4: Maintenance (Real History) -->
+            <div id="tab-content-maintenance" class="hidden space-y-6 text-shadow-none">
+                 <div class="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
+                      <h4 class="font-bold text-slate-900 mb-4">เพิ่มบันทึกการซ่อมบำรุง</h4>
+                      <input type="hidden" id="m-edit-index">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <input type="date" id="m-date" class="bg-white p-3 rounded-xl border border-slate-200 text-xs">
+                          <input type="text" id="m-title" placeholder="หัวข้อการซ่อม/แจ้งเหตุ" class="col-span-2 bg-white p-3 rounded-xl border border-slate-200 text-xs">
+                      </div>
+                      <textarea id="m-desc" placeholder="รายละเอียดการดำเนินการแก้ไข..." class="w-full bg-white p-3 rounded-xl border border-slate-200 text-xs mb-4 h-20"></textarea>
+                      <button type="button" class="bg-blue-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-blue-700 transition" onclick="window.addMaintenanceRecord()">
+                          <i class="fas fa-save mr-1"></i> บันทึกรายการ
+                      </button>
+                 </div>
+                 
+                 <div class="px-2">
+                     <h4 class="font-bold text-slate-900 text-sm mb-4">ประวัติการดำเนินงาน</h4>
+                     <div class="border-l-2 border-slate-200 ml-4 pl-8 space-y-8 py-2 relative" id="maintenance-timeline">
+                          <!-- Timeline items will be injected here -->
+                     </div>
+                 </div>
+            </div>
+
+            <div class="flex gap-4 pt-10 border-t mt-8 text-shadow-none">
+                <button type="submit" class="flex-1 bg-blue-800 text-white py-4 rounded-[1.5rem] font-black shadow-xl active:scale-95 transition text-shadow-none hover:bg-blue-700">บันทึกข้อมูลทั้งหมด</button>
+                <button type="button" id="deletePointBtn" onclick="window.deletePoint()" class="bg-red-50 text-red-500 px-8 rounded-[1.5rem] font-bold hover:bg-red-500 hover:text-white transition uppercase text-xs">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Report Modal (Summary) -->
+<div id="reportModal" class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print">
+    <div class="bg-white w-full max-w-4xl rounded-[3rem] p-10 shadow-2xl animate-slideUp overflow-y-auto max-h-[95vh]">
+        <div class="flex justify-between items-center mb-8 border-b pb-4">
+            <div>
+                <h3 class="text-3xl font-black text-slate-900 tracking-tight">Executive Report</h3>
+                <p class="text-slate-400 text-sm font-medium" id="report-date">Date</p>
+            </div>
+            <button onclick="window.closeReportModal()" class="text-slate-300 hover:text-slate-600 transition"><i class="fas fa-times text-2xl"></i></button>
+        </div>
+        <div class="grid grid-cols-3 gap-6 mb-8">
+             <div class="bg-blue-50 p-6 rounded-3xl text-center"><p class="text-xs text-blue-400 uppercase font-black">Total Nodes</p><h4 class="text-4xl font-black text-blue-900 mt-2" id="r-total">0</h4></div>
+             <div class="bg-green-50 p-6 rounded-3xl text-center"><p class="text-xs text-green-400 uppercase font-black">Health Score</p><h4 class="text-4xl font-black text-green-600 mt-2" id="r-health">0%</h4></div>
+             <div class="bg-orange-50 p-6 rounded-3xl text-center"><p class="text-xs text-orange-400 uppercase font-black">Issues</p><h4 class="text-4xl font-black text-orange-600 mt-2" id="r-backlog">0</h4></div>
+        </div>
+        <div id="report-table-container"></div>
+        <button onclick="window.triggerPrint()" class="mt-8 w-full bg-slate-900 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-slate-800 transition">พิมพ์รายงาน (Print)</button>
+    </div>
+</div>
+
+<!-- Firebase & Logic -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+    // --- 1. FIREBASE SETUP ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBFFqnWaT4r7bDwlz9vyftVmUrRyLMkaTE",
+        authDomain: "uthai-smart-pa.firebaseapp.com",
+        projectId: "uthai-smart-pa",
+        storageBucket: "uthai-smart-pa.firebasestorage.app",
+        messagingSenderId: "780725415438",
+        appId: "1:780725415438:web:a3b5e30b9ca8cdde36165f",
+        measurementId: "G-78E0XPT1EF"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const appId = 'uthai-smart-pa';
+
+    // --- 2. AUTHENTICATION & SYNC ---
+    async function initAuth() {
+        try {
+            await signInAnonymously(auth);
+        } catch (error) {
+            console.error("Auth Error:", error);
+        }
+    }
+
+    initAuth();
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log("Logged in as:", user.uid);
+            startDataSync();
+            startUserSync();
+            startBoundarySync();
+        }
+    });
+
+    // --- 3. DATA SYNCHRONIZATION ---
+    function startDataSync() {
+        const pointsRef = collection(db, 'artifacts', appId, 'public', 'data', 'speaker_points');
+        
+        onSnapshot(pointsRef, (snapshot) => {
+            const data = [];
+            snapshot.forEach(doc => {
+                data.push({ id: doc.id, ...doc.data() });
+            });
+            window.speakerPoints = data;
+            
+            // Hide Loader
+            const loader = document.getElementById('loading');
+            if(loader) loader.classList.add('hidden');
+            
+            window.refreshAllViews();
+        }, (error) => {
+            console.error("Data Sync Error:", error);
+        });
+    }
+
+    function startUserSync() {
+        const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
+        onSnapshot(usersRef, (snapshot) => {
+            const users = [];
+            snapshot.forEach(doc => {
+                users.push({ id: doc.id, ...doc.data() });
+            });
+            if (users.length === 0) {
+                 const admin = { username: 'admin', name: 'หัวหน้าเทคโนโลยีสารสนเทศ', role: 'Admin', password: 'admin123' };
+                 addDoc(usersRef, admin);
+                 users.push(admin);
+            }
+            window.appUsers = users;
+        }, (error) => console.error("User Sync Error:", error));
+    }
+
+    function startBoundarySync() {
+        const boundRef = collection(db, 'artifacts', appId, 'public', 'data', 'boundary');
+        onSnapshot(boundRef, (snapshot) => {
+            if(!snapshot.empty) {
+                // Assuming we use the first doc or a known ID
+                const data = snapshot.docs[0].data();
+                
+                // Parse if string (backward compatibility fix)
+                let latlngs = data.latlngs;
+                if (typeof latlngs === 'string') {
+                    try { latlngs = JSON.parse(latlngs); } catch(e) { latlngs = []; }
+                }
+                
+                window.cityBoundary = latlngs || [];
+                window.refreshBoundary();
+            }
+        });
+    }
+
+    // --- 4. EXPORT FUNCTIONS TO GLOBAL WINDOW ---
+    
+    window.savePointToDB = async (data, id) => {
+        if (!auth.currentUser) return;
+        const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'speaker_points');
+        try {
+            if (id) {
+                await setDoc(doc(colRef, id), data, { merge: true });
+            } else {
+                await addDoc(colRef, data);
+            }
+            window.refreshAllViews();
+            alert("บันทึกข้อมูลเรียบร้อย");
+            window.closePointModal();
+        } catch (e) {
+            console.error(e);
+            alert("เกิดข้อผิดพลาดในการบันทึก: " + e.message);
+        }
+    };
+
+    window.deletePointFromDB = async (id) => {
+        if (!auth.currentUser) return;
+        try {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'speaker_points', id));
+            window.refreshAllViews();
+            window.closePointModal();
+        } catch (e) {
+            console.error(e);
+            alert("ลบข้อมูลไม่สำเร็จ");
+        }
+    };
+
+    window.updatePointCoord = async (id, lat, lng) => {
+        if (!auth.currentUser) return;
+        try {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'speaker_points', id), {
+                Latitude: lat,
+                Longitude: lng
+            });
+            alert("ย้ายพิกัดเรียบร้อย");
+        } catch (e) {
+            console.error(e);
+            alert("อัปเดตพิกัดล้มเหลว");
+        }
+    };
+    
+    window.saveUserToDB = async (userData, id) => {
+         if (!auth.currentUser) return;
+         const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
+         try {
+             if (id) await setDoc(doc(usersRef, id), userData, { merge: true });
+             else await addDoc(usersRef, userData);
+             alert("บันทึกผู้ใช้งานเรียบร้อย");
+             window.closeUserModal();
+         } catch (e) {
+             console.error(e);
+             alert("Error saving user");
+         }
+    };
+
+    window.saveBoundaryToDB = async (latlngs) => {
+        if (!auth.currentUser) return;
+        const boundRef = collection(db, 'artifacts', appId, 'public', 'data', 'boundary');
+        try {
+            // Serialize to string to avoid nested array issue
+            await setDoc(doc(boundRef, 'city_boundary'), { latlngs: JSON.stringify(latlngs) });
+            alert("บันทึกขอบเขตเรียบร้อย");
+        } catch (e) {
+            console.error(e);
+            alert("บันทึกขอบเขตล้มเหลว: " + e.message);
+        }
+    };
+
+    window.deleteBoundaryFromDB = async () => {
+        if (!auth.currentUser) return;
+        try {
+             const boundRef = collection(db, 'artifacts', appId, 'public', 'data', 'boundary');
+             await deleteDoc(doc(boundRef, 'city_boundary'));
+             alert("ลบขอบเขตเรียบร้อย");
+        } catch(e) {
+             console.error(e);
+             alert("ลบไม่สำเร็จ");
+        }
+    };
+</script>
+
+<script>
+    // DEFINE GLOBAL FUNCTIONS FIRST
+    window.showView = function(viewId) {
+        document.querySelectorAll('.spa-view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        const target = document.getElementById(`view-${viewId}`); if(target) target.classList.add('active');
+        const link = Array.from(document.querySelectorAll('.nav-link')).find(l => l.innerHTML.includes(viewId === 'landing' ? 'หน้าแรก' : (viewId === 'map' ? 'แผนที่' : (viewId === 'data' ? 'ทะเบียน' : (viewId === 'dashboard' ? 'Insights' : (viewId === 'users' ? 'ผู้ใช้' : 'พัฒนา'))))));
+        if(link) link.classList.add('active');
+        if(viewId === 'map') setTimeout(() => { initMap(); }, 100);
+        if(viewId === 'data') renderRegistry();
+        if(viewId === 'dashboard') window.updateInsights();
+        if(viewId === 'users') renderUsers();
+        if(viewId === 'developer') document.getElementById('codeBlock').innerText = GAS_CODE_CONTENT;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // GLOBAL STATE
+    let mapInstance = null;
+    let miniMapInstance = null;
+    let miniMarker = null;
+    let markers = [];
+    let boundaryLayer = null;
+    let tempBoundary = [];
+    let tempBoundaryMarkers = []; // Markers for vertices while drawing
+    let isDrawingBoundary = false;
+    let charts = {};
+    let currentUser = null;
+    let currentDashFilter = 'all';
+    let currentSort = 'number_asc'; // Add default sort
+    let listView = 'table';
+    let tempImages = []; 
+    let tempMaintenance = [];
+    
+    // Full Code.gs Content
+    const GAS_CODE_CONTENT = `/**
+ * =========================================================================
+ * UTHAI THANI SMART PA MANAGEMENT SYSTEM - BACKEND ENGINE
+ * Version: 4.8.5 (Final Stable - Production Ready)
+ * Updated: 2026-01-22
+ * Developer: นักวิชาการคอมพิวเตอร์ เทศบาลเมืองอุทัยธานี
+ * =========================================================================
+ */
+const CONFIG = {
+  APP_ID: 'uthai-smart-pa',
+  DRIVE_PHOTO_FOLDER: '1ogy7ecMeNU3_vruq9n0q2X958ZrT81XU',
+  SPREADSHEET_DB_ID: '1Xs_pVZp6SkGNR5XbFTrLycGiBXeeeMd1hw60pjQmr3o'
+};
+
+function doGet(e) {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('Uthai Thani Smart PA')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function processAdminAction(action, payload) {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_DB_ID);
+  if (action === 'USER_SAVE') {
+    const sheet = ss.getSheetByName('users') || ss.insertSheet('users');
+    const data = sheet.getDataRange().getValues();
+    let foundRow = -1;
+    for (let i = 1; i < data.length; i++) { if (data[i][0] == payload.id) { foundRow = i + 1; break; } }
+    const row = [payload.id, payload.username, payload.password, payload.role, payload.name];
+    if (foundRow > -1) sheet.getRange(foundRow, 1, 1, 5).setValues([row]);
+    else sheet.appendRow(row);
+    return { success: true };
+  }
+}
+
+function uploadEvidence(base64Data, fileName, pointNumber) {
+  try {
+    const rootFolder = DriveApp.getFolderById(CONFIG.DRIVE_PHOTO_FOLDER);
+    const folderName = "Point_" + pointNumber;
+    let targetFolder;
+    const folders = rootFolder.getFoldersByName(folderName);
+    targetFolder = folders.hasNext() ? folders.next() : rootFolder.createFolder(folderName);
+    const contentType = base64Data.substring(5, base64Data.indexOf(';'));
+    const bytes = Utilities.base64Decode(base64Data.split(',')[1]);
+    const blob = Utilities.newBlob(bytes, contentType, fileName);
+    const file = targetFolder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    return { success: true, fileId: file.getId(), viewUrl: file.getUrl() };
+  } catch (err) { return { success: false, error: err.toString() }; }
+}`;
+    
+    window.speakerPoints = [];
+    window.appUsers = [];
+    window.cityBoundary = [];
+
+    // --- Core Functions ---
+    window.updateInsights = function() {
+        if (!window.speakerPoints) return;
+        const data = window.speakerPoints;
+        const setVal = (id, v) => { const el = document.getElementById(id); if(el) el.innerText = v; };
+        
+        // Filter logic for charts
+        const filtered = data.filter(p => {
+            return currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter;
+        });
+
+        setVal('db-total', data.length); // Keep total global
+        setVal('db-ok', data.filter(p => (p.Status || '').toLowerCase() === 'operational').length);
+        setVal('db-repair', data.filter(p => (p.Status || '').toLowerCase() === 'under repair').length);
+        setVal('db-old', data.filter(p => p.InstallType === 'Old').length);
+        setVal('db-new', data.filter(p => p.InstallType === 'New').length);
+        setVal('db-moved', data.filter(p => p.InstallType === 'Moved').length);
+        
+        initInsightCharts(filtered);
+    };
+
+    window.refreshAllViews = function() {
+        window.updateInsights();
+        if(mapInstance) applyMapFilter();
+        renderRegistry();
+        const d = window.speakerPoints || [];
+        const setVal = (id, v) => { const el = document.getElementById(id); if(el) el.innerText = v; };
+        setVal('landing-count', d.length); 
+        setVal('landing-zones', [...new Set(d.map(p => p.Zone))].filter(z => z).length); 
+        setVal('landing-olts', [...new Set(d.map(p => p.OLT))].filter(o => o).length);
+        const ok = d.filter(p => (p.Status || '').toLowerCase() === 'operational').length;
+        setVal('landing-percent', d.length > 0 ? Math.round((ok/d.length)*100) + '%' : '0%');
+        // Update filter indicator after views updated
+        try { updateFilterIndicator(); } catch(e) {}
+    };
+
+    function initMap() { 
+        if(mapInstance) { mapInstance.invalidateSize(); return; }
+        mapInstance = L.map('map').setView([15.3800, 100.0250], 14); 
+        window.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
+        window.satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' });
+        window.streetLayer.addTo(mapInstance); 
+        
+        // Map Click for Boundary
+        mapInstance.on('click', function(e) {
+            if(isDrawingBoundary) {
+                tempBoundary.push([e.latlng.lat, e.latlng.lng]);
+                renderTempBoundary();
+            }
+        });
+
+        applyMapFilter(); 
+        window.refreshBoundary();
+    }
+
+    function applyMapFilter() {
+        if (!mapInstance || !window.speakerPoints) return; 
+        markers.forEach(m => mapInstance.removeLayer(m)); markers = [];
+        const filtered = window.speakerPoints.filter(p => currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter);
+        filtered.forEach(p => {
+            const lat = parseFloat(p.Latitude); const lng = parseFloat(p.Longitude);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                
+                // --- COLOR LOGIC (UPDATED) ---
+                let color = '#10b981'; // Default Green (Operational)
+                const status = (p.Status || '').toLowerCase();
+                const type = (p.InstallType || '').toLowerCase();
+
+                if (status === 'under repair') {
+                    color = '#b91c1c'; // Dark Red (Important)
+                } else if (type === 'moved') {
+                    color = '#9333ea'; // Purple
+                } else if (type === 'new') {
+                    color = '#06b6d4'; // Cyan
+                } else if (type === 'old') {
+                    color = '#1d4ed8'; // Blue
+                }
+
+                // Smart Marker Construction with Number
+                const iconHtml = `<div class="marker-pin">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="white" stroke="${color}" stroke-width="2.5"/>
+                        <path d="M10 8L7 11H5V13H7L10 16V8Z" fill="${color}"/>
+                        <path d="M12 9C13.5 10.5 13.5 13.5 12 15" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M14 7C16.5 9.5 16.5 14.5 14 17" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span class="marker-number" style="color: ${status === 'under repair' ? '#7f1d1d' : '#1e3a8a'}">${p.Number}</span>
+                </div>`;
+                
+                const icon = L.divIcon({ 
+                    html: iconHtml, 
+                    iconSize: [48, 48], 
+                    iconAnchor: [24, 48], 
+                    className: 'custom-div-icon' 
+                });
+                
+                const m = L.marker([lat, lng], { 
+                    icon: icon,
+                    draggable: currentUser && currentUser.role === 'Admin'
+                }).addTo(mapInstance);
+
+                m.on('dragend', function(e) {
+                    const newPos = e.target.getLatLng();
+                    if(confirm(`ยืนยันการย้ายพิกัด #${p.Number}?`)) {
+                        window.updatePointCoord(p.id, newPos.lat.toFixed(6), newPos.lng.toFixed(6));
+                    } else {
+                        applyMapFilter(); 
+                    }
+                });
+
+                // Improved Popup with Quick Edit
+                const popupContent = `<div class="p-2 w-60 font-sans">
+                    <div class="h-32 bg-slate-100 rounded-lg mb-2 overflow-hidden relative">
+                        ${p.Images && p.Images.length > 0 ? `<img src="${p.Images[0]}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300"><i class="fas fa-image text-3xl"></i></div>`}
+                        <span class="absolute top-2 right-2 bg-blue-900 text-white text-[10px] px-2 py-1 rounded-full font-bold">#${p.Number}</span>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-sm mb-1 line-clamp-1">${p.Position}</h3>
+                    <div class="flex gap-2 mb-2 text-[10px] font-medium text-slate-500">
+                        <span class="bg-slate-100 px-2 py-0.5 rounded">Zone ${p.Zone}</span>
+                        <span class="${p.Status === 'Operational' ? 'text-green-600' : 'text-red-600 font-bold'}">${p.Status}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="bg-green-600 text-white text-center py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition"><i class="fas fa-location-arrow mr-1"></i> นำทาง</a>
+                        <button onclick="window.openFullDetailModal('${p.id}')" class="bg-blue-800 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition"><i class="fas fa-file-alt mr-1"></i> รายละเอียด</button>
+                        ${(currentUser && currentUser.role === 'Admin') ? 
+                        `<button onclick="window.openPointModal('${p.id}')" class="col-span-2 bg-yellow-500 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-600 transition shadow-sm border border-yellow-600/20"><i class="fas fa-edit mr-1"></i> แก้ไขด่วน (Quick Edit)</button>` : ''}
+                    </div>
+                </div>`;
+                m.bindPopup(popupContent, { maxWidth: 300 }); 
+                markers.push(m);
+            }
+        });
+    }
+
+    // --- BOUNDARY FUNCTIONS ---
+    window.toggleBoundaryEdit = function() {
+        if(!currentUser || currentUser.role !== 'Admin') return alert("สำหรับ Admin เท่านั้น");
+        isDrawingBoundary = !isDrawingBoundary;
+        const btn = document.getElementById('boundaryBtn');
+        const controls = document.getElementById('boundaryControls');
+        
+        if(isDrawingBoundary) {
+            btn.classList.add('bg-red-500');
+            btn.innerHTML = '<i class="fas fa-times"></i>';
+            controls.classList.remove('hidden');
+            tempBoundary = [];
+            // Optional: load existing to edit
+            if(window.cityBoundary.length > 0 && confirm("ต้องการแก้ไขเส้นเดิมหรือไม่?")) {
+                tempBoundary = [...window.cityBoundary];
+                renderTempBoundary();
+            } else {
+                window.cityBoundary = []; // clear visual
+                window.refreshBoundary();
+            }
+        } else {
+            btn.classList.remove('bg-red-500');
+            btn.innerHTML = '<i class="fas fa-pen-nib"></i>';
+            controls.classList.add('hidden');
+            renderTempBoundary(); // clear temp markers
+            window.refreshBoundary(); // restore saved
+        }
+    };
+
+    function renderTempBoundary() {
+        // Clear previous layer
+        if(boundaryLayer) mapInstance.removeLayer(boundaryLayer);
+        // Clear temp markers
+        tempBoundaryMarkers.forEach(m => mapInstance.removeLayer(m));
+        tempBoundaryMarkers = [];
+
+        // Draw Polygon
+        if(tempBoundary.length > 0) {
+            boundaryLayer = L.polygon(tempBoundary, { color: 'purple', dashArray: '5, 5', fillOpacity: 0.1 }).addTo(mapInstance);
+            
+            // Draw Vertex Markers
+            tempBoundary.forEach(pt => {
+                const m = L.circleMarker(pt, { radius: 4, color: 'purple', fillColor: 'white', fillOpacity: 1 }).addTo(mapInstance);
+                tempBoundaryMarkers.push(m);
+            });
+        }
+    }
+
+    window.refreshBoundary = function() {
+        if(boundaryLayer) mapInstance.removeLayer(boundaryLayer);
+        // Clear temp markers just in case
+        tempBoundaryMarkers.forEach(m => mapInstance.removeLayer(m));
+        tempBoundaryMarkers = [];
+
+        if(window.cityBoundary && window.cityBoundary.length > 0) {
+            boundaryLayer = L.polygon(window.cityBoundary, { color: '#3b82f6', weight: 2, fillOpacity: 0.05 }).addTo(mapInstance);
+            boundaryLayer.bringToBack();
+        }
+    };
+
+    window.clearBoundary = function() { tempBoundary = []; renderTempBoundary(); };
+    window.saveBoundary = function() {
+        if(tempBoundary.length < 3) return alert("ต้องมีจุดอย่างน้อย 3 จุด");
+        window.saveBoundaryToDB(tempBoundary);
+        window.cityBoundary = [...tempBoundary];
+        // Clean up visual helpers
+        tempBoundaryMarkers.forEach(m => mapInstance.removeLayer(m));
+        tempBoundaryMarkers = [];
+        
+        isDrawingBoundary = false;
+        document.getElementById('boundaryBtn').click(); // toggle off UI state
+    };
+    
+    window.deleteBoundary = function() {
+        if(confirm("ยืนยันลบขอบเขตพื้นที่?")) {
+            window.deleteBoundaryFromDB();
+            window.cityBoundary = [];
+            window.refreshBoundary();
+            window.toggleBoundaryEdit(); // Close edit mode
+        }
+    }
+
+    // --- FULL DETAIL MODAL ---
+    window.openFullDetailModal = function(id) {
+        const p = window.speakerPoints.find(item => item.id == id);
+        if(!p) return;
+        
+        document.getElementById('fd-number').innerText = p.Number;
+        document.getElementById('fd-position').innerText = p.Position;
+        document.getElementById('fd-zone').innerText = "Zone " + p.Zone;
+        document.getElementById('fd-type').innerText = p.InstallType || '-';
+        document.getElementById('fd-lat').innerText = p.Latitude;
+        document.getElementById('fd-lng').innerText = p.Longitude;
+        document.getElementById('fd-olt').innerText = p.OLT || '-';
+        document.getElementById('fd-status').innerText = p.Status;
+        document.getElementById('fd-inventory').innerText = p.InventoryNumber || '-';
+        document.getElementById('fd-serial').innerText = p.SerialNumber || '-';
+        document.getElementById('fd-notes').innerText = p.Notes || p.Remarks || '-';
+        document.getElementById('fd-print-date').innerText = new Date().toLocaleString('th-TH');
+
+        // Show Speaker Info
+        const spSize = p.Speaker_size || '100';
+        const spQty = p.Speakers_amount || '2';
+        document.getElementById('fd-speaker-info').innerText = `${spSize} วัตต์ (${spQty} ตัว/จุด)`;
+
+        // Images
+        const imgContainer = document.getElementById('fd-images');
+        imgContainer.innerHTML = (p.Images || []).map(src => `<div class="aspect-video bg-slate-100 rounded-xl overflow-hidden border"><img src="${src}" class="w-full h-full object-cover"></div>`).join('');
+        if((p.Images||[]).length === 0) imgContainer.innerHTML = `<div class="aspect-video bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 border col-span-2"><p>ไม่มีรูปภาพ</p></div>`;
+
+        // Maintenance
+        const logsContainer = document.getElementById('fd-maintenance-rows');
+        logsContainer.innerHTML = (p.Maintenance || []).map(m => `
+            <tr>
+                <td class="p-4 font-bold text-slate-700 whitespace-nowrap">${new Date(m.date).toLocaleDateString('th-TH')}</td>
+                <td class="p-4 font-bold text-blue-900">${m.title}</td>
+                <td class="p-4 text-slate-600">${m.desc || '-'}</td>
+            </tr>
+        `).join('');
+        if((p.Maintenance||[]).length === 0) logsContainer.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400 italic">ไม่พบประวัติการซ่อมบำรุง</td></tr>`;
+
+        document.getElementById('fullDetailModal').classList.remove('hidden');
+    };
+
+    // --- PRINT TRIGGER ---
+    window.triggerPrint = function() {
+        try {
+            window.print();
+        } catch (e) {
+            console.error("Print failed:", e);
+            alert("ไม่สามารถเปิดหน้าต่างพิมพ์อัตโนมัติได้\nกรุณากด Ctrl + P (หรือ Command + P บน Mac) เพื่อพิมพ์");
+        }
+    };
+
+    function initInsightCharts(data) {
+        Object.values(charts).forEach(c => c?.destroy());
+        const olts = {}; data.forEach(p => { if(p.OLT) olts[p.OLT] = (olts[p.OLT] || 0) + 1; });
+        const ctxOlt = document.getElementById('oltInsightChart');
+        if(ctxOlt) charts.olt = new Chart(ctxOlt, { type: 'bar', data: { labels: Object.keys(olts), datasets: [{ label: 'Nodes Count', data: Object.values(olts), backgroundColor: '#1e40af', borderRadius: 12 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false } } } });
+        const sizes = { '100"': data.filter(p => p.Speaker_size == '100').length, '30"': data.filter(p => p.Speaker_size == '30').length, 'อื่นๆ': data.filter(p => p.Speaker_size != '100' && p.Speaker_size != '30').length };
+        const ctxSize = document.getElementById('sizeDistChart');
+        if(ctxSize) charts.size = new Chart(ctxSize, { type: 'doughnut', data: { labels: Object.keys(sizes), datasets: [{ data: Object.values(sizes), backgroundColor: ['#1e293b', '#3b82f6', '#cbd5e1'] }] }, options: { cutout: '70%' } });
+    }
+
+    // --- Report Modal Logic ---
+    window.openReportModal = function() {
+        if (!window.speakerPoints) return;
+        const data = [...window.speakerPoints].sort((a,b) => (parseInt(a.Number)||0) - (parseInt(b.Number)||0));
+        
+        // Safety Check for Elements
+        const dateEl = document.getElementById('report-date');
+        if(dateEl) dateEl.innerText = new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+        
+        const totalEl = document.getElementById('r-total');
+        if(totalEl) totalEl.innerText = data.length;
+        
+        const ok = data.filter(p => (p.Status||'').toLowerCase() === 'operational').length;
+        
+        const healthEl = document.getElementById('r-health');
+        if(healthEl) healthEl.innerText = data.length > 0 ? Math.round((ok/data.length)*100) + '%' : '0%';
+        
+        const backlogEl = document.getElementById('r-backlog');
+        if(backlogEl) backlogEl.innerText = data.length - ok;
+        
+        const tableContainer = document.getElementById('report-table-container');
+        if(tableContainer) {
+            tableContainer.innerHTML = `<table class="w-full text-left border-collapse report-card text-shadow-none"><thead><tr class="bg-slate-900 text-white text-[9px] uppercase tracking-widest"><th class="p-4">NO.</th><th class="p-4">POSITION</th><th class="p-4 text-center">ZONE</th><th class="p-4 text-center text-shadow-none">STATUS</th></tr></thead><tbody class="divide-y divide-slate-100 text-shadow-none">
+            ${data.map(p => `<tr class="text-[11px] font-medium text-shadow-none text-shadow-none"><td class="p-4 font-black">#${p.Number}</td><td class="p-4">${p.Position}</td><td class="p-4 text-center font-bold">Zone ${p.Zone}</td><td class="p-4 text-center font-bold ${p.Status === 'Operational' ? 'text-green-600' : 'text-orange-500'} uppercase">${p.Status}</td></tr>`).join('')}
+        </tbody></table>`;
+        }
+        
+        const modal = document.getElementById('reportModal');
+        if(modal) modal.classList.remove('hidden');
+    };
+    window.closeReportModal = function() { 
+        const modal = document.getElementById('reportModal');
+        if(modal) modal.classList.add('hidden'); 
+    };
+
+
+    // --- Auth Logic ---
+    window.openLogin = function() { 
+        const modal = document.getElementById('loginModal');
+        if(modal) modal.classList.remove('hidden');
+    }
+    window.closeLogin = function() { 
+        const modal = document.getElementById('loginModal');
+        if(modal) modal.classList.add('hidden');
+    }
+    
+    window.handleLogin = function() { 
+        const u = document.getElementById('username').value; 
+        const p = document.getElementById('password').value;
+        const user = window.appUsers.find(au => au.username === u && au.password === p);
+        if(user) {
+            currentUser = user;
+            ['loginBtn', 'loginModal'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            ['userProfile', 'admin-controls', 'nav-users', 'mapAddBtn', 'boundaryBtn'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.remove('hidden');
+            });
+            document.getElementById('userNameDisplay').innerText = currentUser.name; 
+            document.getElementById('userRoleDisplay').innerText = currentUser.role === 'Admin' ? 'Administrator' : 'Officer';
+            showView('dashboard');
+            applyMapFilter(); 
+            renderRegistry(); 
+        } else {
+            alert("ล็อกอินไม่สำเร็จ (ลองใช้ admin / admin123)");
+        }
+    };
+    window.logout = function() { 
+        currentUser = null; 
+        window.location.reload(); 
+    };
+
+    // --- Point Management Logic ---
+    window.setPointTab = function(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(`tab-${tab}`); if(btn) btn.classList.add('active');
+        ['general', 'location', 'media', 'maintenance'].forEach(t => {
+            const el = document.getElementById(`tab-content-${t}`);
+            if(el) el.classList.add('hidden');
+        });
+        const activeContent = document.getElementById(`tab-content-${tab}`);
+        if(activeContent) activeContent.classList.remove('hidden');
+        if(tab === 'location') setTimeout(() => { initMiniMap(); }, 200);
+    };
+
+    function initMiniMap() {
+        const lat = parseFloat(document.getElementById('f-lat').value) || 15.38;
+        const lng = parseFloat(document.getElementById('f-lng').value) || 100.02;
+        if(miniMapInstance) miniMapInstance.remove();
+        miniMapInstance = L.map('miniMap').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMapInstance);
+        miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMapInstance);
+        miniMarker.on('dragend', function() {
+            const pos = miniMarker.getLatLng();
+            document.getElementById('f-lat').value = pos.lat.toFixed(6);
+            document.getElementById('f-lng').value = pos.lng.toFixed(6);
+        });
+    }
+
+    // Handle Image Upload with Compression (Client-side)
+    window.handleImageUpload = function(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        
+        if(file.size > 2000000) { alert("ไฟล์ใหญ่เกินไป กรุณาใช้ไฟล์ไม่เกิน 2MB"); return; }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; // Resize to max width 800px for storage
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Compress Quality 60%
+                
+                tempImages.push(dataUrl);
+                renderTempImages();
+            }
+        }
+        reader.readAsDataURL(file);
+    };
+
+    function renderTempImages() {
+        const container = document.getElementById('image-gallery-container');
+        // Keep the upload button
+        const uploadBtn = container.firstElementChild;
+        container.innerHTML = '';
+        container.appendChild(uploadBtn);
+        
+        tempImages.forEach((img, index) => {
+            const div = document.createElement('div');
+            div.className = "relative group rounded-[2rem] overflow-hidden shadow-sm aspect-square";
+            div.innerHTML = `<img src="${img}" class="w-full h-full object-cover">
+            <button onclick="window.removeTempImage(${index})" class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition"><i class="fas fa-times"></i></button>`;
+            container.appendChild(div);
+        });
+    }
+
+    window.removeTempImage = function(index) {
+        tempImages.splice(index, 1);
+        renderTempImages();
+    };
+
+    // Maintenance Log Logic
+    window.addMaintenanceRecord = function() {
+        const date = document.getElementById('m-date').value;
+        const title = document.getElementById('m-title').value;
+        const desc = document.getElementById('m-desc').value;
+        const editIndex = document.getElementById('m-edit-index').value;
+
+        if(!date || !title) { alert("กรุณาระบุวันที่และหัวข้อ"); return; }
+        
+        const newRecord = { date, title, desc, timestamp: Date.now() };
+        
+        if(editIndex !== "") {
+            // Edit existing
+            tempMaintenance[parseInt(editIndex)] = newRecord;
+            document.getElementById('m-edit-index').value = ""; // Reset
+        } else {
+            // Add new
+            tempMaintenance.push(newRecord);
+        }
+        
+        tempMaintenance.sort((a,b) => new Date(b.date) - new Date(a.date)); // Sort new first
+        
+        // Reset Inputs
+        document.getElementById('m-title').value = '';
+        document.getElementById('m-desc').value = '';
+        renderMaintenanceTimeline();
+    };
+
+    window.editMaintenanceLog = function(index) {
+        const log = tempMaintenance[index];
+        document.getElementById('m-date').value = log.date;
+        document.getElementById('m-title').value = log.title;
+        document.getElementById('m-desc').value = log.desc;
+        document.getElementById('m-edit-index').value = index;
+        // Focus to indicate editing
+        document.getElementById('m-title').focus();
+    };
+
+    window.deleteMaintenanceLog = function(index) {
+        if(confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
+            tempMaintenance.splice(index, 1);
+            renderMaintenanceTimeline();
+        }
+    };
+
+    function renderMaintenanceTimeline() {
+        const container = document.getElementById('maintenance-timeline');
+        container.innerHTML = '';
+        
+        if(tempMaintenance.length === 0) {
+            container.innerHTML = `<p class="text-xs text-slate-300 italic">ยังไม่มีประวัติการซ่อมบำรุง</p>`;
+            return;
+        }
+
+        tempMaintenance.forEach((log, index) => {
+            const dateStr = new Date(log.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+            container.innerHTML += `
+            <div class="relative mb-6 last:mb-0 group">
+                <div class="absolute -left-[41px] top-1 w-6 h-6 bg-white rounded-full border-4 border-blue-500 shadow-md z-10"></div>
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <p class="text-[10px] font-black text-blue-400 uppercase tracking-wider mb-1">${dateStr}</p>
+                        <h5 class="text-sm font-bold text-slate-800 leading-tight">${log.title}</h5>
+                        <p class="text-xs text-slate-500 mt-1 font-medium bg-slate-50 p-3 rounded-xl border border-slate-100">${log.desc || '-'}</p>
+                    </div>
+                    ${currentUser && currentUser.role === 'Admin' ? 
+                    `<div class="flex space-x-2 ml-2 opacity-0 group-hover:opacity-100 transition">
+                        <button type="button" onclick="window.editMaintenanceLog(${index})" class="text-blue-500 hover:text-blue-700 text-xs p-1"><i class="fas fa-pencil"></i></button>
+                        <button type="button" onclick="window.deleteMaintenanceLog(${index})" class="text-red-400 hover:text-red-600 text-xs p-1"><i class="fas fa-trash"></i></button>
+                    </div>` : ''}
+                </div>
+            </div>`;
+        });
+    }
+
+    window.openPointModal = function(pointId = null) {
+        if(!currentUser) return;
+        const m = document.getElementById('pointModal');
+        const form = document.getElementById('pointForm');
+        form.reset(); window.setPointTab('general');
+        document.getElementById('modalTitle').innerText = pointId ? "จัดการข้อมูลพิกัด" : "ลงทะเบียนจุดใหม่";
+        document.getElementById('deletePointBtn').style.display = pointId ? 'block' : 'none';
+        
+        tempImages = [];
+        tempMaintenance = [];
+        document.getElementById('m-edit-index').value = "";
+
+        if(pointId) {
+            const p = window.speakerPoints.find(item => item.id == pointId);
+            if(p) {
+                document.getElementById('f-id').value = p.id;
+                document.getElementById('f-number').value = p.Number;
+                document.getElementById('f-zone').value = p.Zone;
+                document.getElementById('f-position').value = p.Position;
+                document.getElementById('f-inv').value = p.InventoryNumber || '';
+                document.getElementById('f-serial').value = p.SerialNumber || '';
+                document.getElementById('f-remark').value = p.Remarks || '';
+                document.getElementById('f-notes').value = p.Notes || '';
+                document.getElementById('f-lat').value = p.Latitude;
+                document.getElementById('f-lng').value = p.Longitude;
+                document.getElementById('f-olt').value = p.OLT;
+                document.getElementById('f-status').value = p.Status;
+                document.getElementById('f-install-type').value = p.InstallType || 'Old';
+                document.getElementById('f-size').value = p.Speaker_size || '100';
+                document.getElementById('f-amount').value = p.Speakers_amount || '2';
+                
+                // Load Images
+                if(p.Images) tempImages = [...p.Images];
+                
+                // Load Maintenance
+                if(p.Maintenance) tempMaintenance = [...p.Maintenance];
+            }
+        } else {
+             document.getElementById('f-lat').value = "15.380000";
+             document.getElementById('f-lng').value = "100.025000";
+             document.getElementById('m-date').valueAsDate = new Date();
+             document.getElementById('f-amount').value = '2';
+               document.getElementById('f-inv').value = '';
+               document.getElementById('f-serial').value = '';
+               document.getElementById('f-remark').value = '';
+               document.getElementById('f-notes').value = '';
+        }
+        
+        renderTempImages();
+        renderMaintenanceTimeline();
+        
+        if(m) m.classList.remove('hidden');
+    };
+
+    window.closePointModal = function() { document.getElementById('pointModal').classList.add('hidden'); };
+
+    window.savePoint = function(e) {
+        e.preventDefault();
+        const idInput = document.getElementById('f-id').value;
+        const data = {
+            Number: parseInt(document.getElementById('f-number').value),
+            Zone: document.getElementById('f-zone').value,
+            Position: document.getElementById('f-position').value,
+            InventoryNumber: document.getElementById('f-inv').value || '',
+            SerialNumber: document.getElementById('f-serial').value || '',
+            Latitude: document.getElementById('f-lat').value,
+            Longitude: document.getElementById('f-lng').value,
+            OLT: document.getElementById('f-olt').value,
+            Status: document.getElementById('f-status').value,
+            InstallType: document.getElementById('f-install-type').value,
+            Speaker_size: document.getElementById('f-size').value,
+            Speakers_amount: document.getElementById('f-amount').value,
+            Remarks: document.getElementById('f-remark').value || '',
+            Notes: document.getElementById('f-notes').value || '',
+            Images: tempImages,
+            Maintenance: tempMaintenance
+        };
+        // Call global function connected to DB
+        window.savePointToDB(data, idInput || null);
+    };
+
+    window.deletePoint = function() {
+        if(!confirm("ยืนยันการลบจุดพิกัด?")) return;
+        const id = document.getElementById('f-id').value;
+        window.deletePointFromDB(id);
+    };
+
+    // --- User Management Logic ---
+    window.openUserModal = function(userId = null) {
+        const m = document.getElementById('userModal');
+        const form = document.getElementById('userForm');
+        // Check if form exists before reset
+        if (form) form.reset();
+        
+        document.getElementById('userModalTitle').innerText = userId ? "Edit User Account" : "Register Authority";
+        if(userId) {
+            const u = window.appUsers.find(item => item.id == userId);
+            if(u) {
+                document.getElementById('u-id').value = u.id;
+                document.getElementById('u-name').value = u.name;
+                document.getElementById('u-username').value = u.username;
+                document.getElementById('u-password').value = u.password;
+                document.getElementById('u-role').value = u.role;
+            }
+        }
+        if(m) m.classList.remove('hidden');
+    };
+    window.closeUserModal = function() { document.getElementById('userModal').classList.add('hidden'); }
+    window.saveUser = function(e) { 
+        e.preventDefault(); 
+        const id = document.getElementById('u-id').value;
+        const data = {
+            name: document.getElementById('u-name').value,
+            username: document.getElementById('u-username').value,
+            password: document.getElementById('u-password').value,
+            role: document.getElementById('u-role').value
+        };
+        window.saveUserToDB(data, id || null);
+    };
+
+    window.renderUsers = function() {
+        const c = document.getElementById('userListContainer'); if(!c) return;
+        c.innerHTML = (window.appUsers || []).map(u => `<div class="bg-white p-8 rounded-[2rem] border border-slate-50 flex justify-between items-center shadow-sm text-shadow-none text-shadow-none"><div class="flex items-center space-x-5 text-shadow-none text-shadow-none"><div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-lg text-shadow-none">${u.username[0].toUpperCase()}</div><div><h4 class="font-bold text-slate-800 text-lg leading-none">${u.name}</h4><p class="text-[10px] text-slate-400 uppercase font-black mt-1">Username: ${u.username} • Role: ${u.role}</p></div></div><div class="flex space-x-3 text-shadow-none"><button class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition" onclick="window.openUserModal('${u.id}')"><i class="fas fa-edit text-shadow-none"></i></button><button class="w-12 h-12 bg-red-50 text-red-400 rounded-2xl hover:bg-red-600 hover:text-white transition" onclick="alert('Delete action triggered')"><i class="fas fa-trash-alt text-shadow-none text-shadow-none"></i></button></div></div>`).join('');
+    };
+
+    // --- Developer Utils ---
+    window.copyCode = function() { 
+        const t = document.getElementById('codeBlock').innerText; 
+        const textArea = document.createElement("textarea");
+        textArea.value = t;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            const successful = document.execCommand('copy');
+            if(successful) alert('คัดลอกสำเร็จ!');
+            else alert('คัดลอกไม่สำเร็จ โปรดกด Ctrl+C');
+        } catch (err) {
+            console.error('Fallback copy failed', err);
+            alert('ไม่สามารถคัดลอกอัตโนมัติได้');
+        }
+        document.body.removeChild(textArea);
+    };
+
+    // --- Sorting Logic ---
+    window.setSort = function(option) {
+        currentSort = option;
+        renderRegistry();
+    };
+
+    function renderRegistry() {
+        // Clone data to avoid mutating original
+        let data = [...(window.speakerPoints || [])];
+
+        // Apply Search & Filters first
+        const q = (document.getElementById('searchInput')?.value || "").toLowerCase();
+        const fZone = document.getElementById('filterZone')?.value;
+        const fType = document.getElementById('filterType')?.value;
+        const fStatus = document.getElementById('filterStatus')?.value;
+        
+        const filtered = data.filter(p => {
+            const dashMatch = currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter;
+            const matchQuery = (p.Position || "").toLowerCase().includes(q) || String(p.Number).includes(q);
+            const matchZone = fZone ? p.Zone == fZone : true;
+            const matchType = fType ? p.InstallType == fType : true;
+            const matchStatus = fStatus ? p.Status == fStatus : true;
+            return dashMatch && matchQuery && matchZone && matchType && matchStatus;
+        });
+
+        // Apply Sorting
+        filtered.sort((a, b) => {
+            if (currentSort === 'number_asc') {
+                return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0);
+            } else if (currentSort === 'number_desc') {
+                return (parseInt(b.Number) || 0) - (parseInt(a.Number) || 0);
+            } else if (currentSort === 'zone') {
+                const zoneA = parseInt(a.Zone) || 999;
+                const zoneB = parseInt(b.Zone) || 999;
+                if (zoneA !== zoneB) return zoneA - zoneB;
+                return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0); // fallback to number
+            } else if (currentSort === 'status') {
+                // Sort Status alphabetically, then Number
+                const statusA = (a.Status || "").toLowerCase();
+                const statusB = (b.Status || "").toLowerCase();
+                if (statusA < statusB) return -1;
+                if (statusA > statusB) return 1;
+                return (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0);
+            }
+            return 0;
+        });
+
+        // Update Count
+        const countEl = document.getElementById('registry-count');
+        if(countEl) countEl.innerText = `${filtered.length} Items`;
+
+        const container = document.getElementById('registryContent'); if(!container) return;
+        if(listView === 'table') {
+            container.innerHTML = `<table class="w-full text-left text-shadow-none"><thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-black border-b tracking-widest text-shadow-none"><tr><th class="p-8">หมายเลข / โซน</th><th class="p-8">พิกัด / ตำแหน่ง</th><th class="p-8 text-shadow-none">สถานี OLT</th><th class="p-8 text-center text-shadow-none">จัดการ</th></tr></thead><tbody class="divide-y divide-slate-50">
+            ${filtered.map(p => {
+                const imgHtml = (p.Images && p.Images.length > 0) ? `<img src="${p.Images[0]}" class="w-12 h-12 rounded-lg object-cover border mr-3 inline-block">` : '';
+                return `<tr class="hover:bg-slate-50 transition border-b border-slate-50 text-shadow-none text-shadow-none cursor-pointer" onclick="window.openFullDetailModal('${p.id}')">
+                    <td class="p-8">
+                        <div class="flex items-center">
+                            ${imgHtml}
+                            <div>
+                                <p class="text-sm font-black text-blue-900 uppercase text-shadow-none">NO. ${p.Number}</p>
+                                <span class="text-[9px] bg-blue-50 px-2 py-0.5 rounded-full font-black text-blue-400 uppercase tracking-widest leading-none">ZONE ${p.Zone}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-8"><p class="text-sm font-bold text-slate-800 leading-tight">${p.Position}</p></td>
+                    <td class="p-8"><p class="text-xs font-black text-slate-600">${p.OLT}</p></td>
+                    <td class="p-8 text-center" onclick="event.stopPropagation()">${currentUser ? `<button class="w-12 h-12 bg-blue-50 text-blue-800 rounded-2xl hover:bg-blue-800 hover:text-white transition shadow-sm" onclick="window.openPointModal('${p.id}')"><i class="fas fa-gear text-sm text-shadow-none"></i></button>` : `<i class="fas fa-lock text-slate-100"></i>`}</td>
+                </tr>`;
+            }).join('')}</tbody></table>`;
+        } else {
+            container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-8">${filtered.map(p => {
+                const imgHtml = (p.Images && p.Images.length > 0) 
+                    ? `<div class="h-40 w-full mb-4 rounded-2xl bg-cover bg-center" style="background-image: url('${p.Images[0]}')"></div>`
+                    : `<div class="h-40 w-full mb-4 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-200"><i class="fas fa-image text-4xl"></i></div>`;
+                
+                return `<div class="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm flex flex-col justify-between group hover:border-blue-200 transition text-shadow-none cursor-pointer" onclick="window.openFullDetailModal('${p.id}')">
+                    <div class="space-y-4">
+                        ${imgHtml}
+                        <div class="flex justify-between items-center"><span class="text-xs font-black text-blue-900 text-shadow-none">#${p.Number}</span><span class="px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-bold uppercase tracking-widest">ZONE ${p.Zone}</span></div>
+                        <h4 class="font-black text-lg text-slate-800 leading-tight group-hover:text-blue-800 transition text-shadow-none">${p.Position}</h4>
+                    </div>
+                    <div class="pt-6 border-t mt-6 flex justify-between items-center">
+                        <span class="text-[9px] font-black uppercase ${p.Status === 'Operational' ? 'text-green-600' : 'text-orange-600'} text-shadow-none">${p.Status}</span>
+                        ${currentUser ? `<button class="text-blue-600 text-[10px] font-black uppercase hover:underline" onclick="event.stopPropagation(); window.openPointModal('${p.id}')">Manage <i class="fas fa-arrow-right ml-1"></i></button>` : `<i class="fas fa-lock text-slate-200"></i>`}
+                    </div>
+                </div>`;
+            }).join('')}</div>`;
+        }
+        const empty = document.getElementById('noDataMessage'); if(filtered.length === 0) empty.classList.remove('hidden'); else empty.classList.add('hidden');
+    }
+
+    window.applyDashFilter = function(f) { 
+        currentDashFilter = f;
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-filter'));
+        const el = document.getElementById(`filter-${f.replace(' ', '')}`);
+        if(el) el.classList.add('active-filter');
+        window.refreshAllViews(); // Update charts and maps
+        // Show combined hub (map + registry + insights) to avoid confusion
+        showHub();
+        updateFilterIndicator();
+    }
+    window.setListView = function(v) { 
+        listView = v; 
+        document.querySelectorAll('[id^="btn-"]').forEach(b => b.classList.replace('bg-blue-100', 'text-slate-400')); 
+        document.getElementById(`btn-${v}`).classList.add('bg-blue-100', 'text-blue-800'); 
+        renderRegistry(); 
+    }
+    window.filterData = function() { renderRegistry(); updateFilterIndicator(); }
+    window.handleImport = function(event) { alert("Bulk synchronization ready (Mock)"); }
+    window.setMapLayer = function(t) { 
+        if(t === 'satellite') { 
+            mapInstance.removeLayer(window.streetLayer); 
+            window.satLayer.addTo(mapInstance); 
+            document.getElementById('btn-satellite').classList.replace('text-slate-400', 'bg-blue-100');
+            document.getElementById('btn-satellite').classList.add('text-blue-800');
+            document.getElementById('btn-streets').classList.replace('bg-blue-100', 'text-slate-400');
+            document.getElementById('btn-streets').classList.remove('text-blue-800');
+        } else { 
+            mapInstance.removeLayer(window.satLayer); 
+            window.streetLayer.addTo(mapInstance); 
+            document.getElementById('btn-streets').classList.replace('text-slate-400', 'bg-blue-100');
+            document.getElementById('btn-streets').classList.add('text-blue-800');
+            document.getElementById('btn-satellite').classList.replace('bg-blue-100', 'text-slate-400');
+            document.getElementById('btn-satellite').classList.remove('text-blue-800');
+        } 
+        if(boundaryLayer) boundaryLayer.bringToBack(); // Keep boundary at back
+    };
+
+    // Show combined Hub view: map + registry + dashboard
+    function showHub() {
+        document.querySelectorAll('.spa-view').forEach(v => v.classList.remove('active'));
+        ['view-map','view-data','view-dashboard'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('active');
+        });
+        // Update nav link active states
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        const hubLink = document.getElementById('nav-hub'); if(hubLink) hubLink.classList.add('active');
+        setTimeout(() => { if(mapInstance) mapInstance.invalidateSize(); }, 200);
+    }
+
+    // Update filter indicator panel
+    function updateFilterIndicator() {
+        const panel = document.getElementById('filterIndicator');
+        const nameEl = document.getElementById('filterIndicatorName');
+        const countEl = document.getElementById('filterIndicatorCount');
+        if(!panel || !nameEl || !countEl) return;
+        const f = currentDashFilter || 'all';
+        const displayName = (f === 'all') ? 'All' : f;
+        const count = (window.speakerPoints || []).filter(p => (f === 'all') || p.Status === f || p.InstallType === f).length;
+        nameEl.innerText = displayName;
+        countEl.innerText = count;
+        if(f === 'all') panel.classList.add('hidden'); else panel.classList.remove('hidden');
+    }
+
+    function clearDashFilter() {
+        currentDashFilter = 'all';
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active-filter'));
+        window.refreshAllViews();
+        updateFilterIndicator();
+    }
+
+    window.onload = () => { 
+        showView('landing'); 
+    };
+</script>
+</body>
+</html>
