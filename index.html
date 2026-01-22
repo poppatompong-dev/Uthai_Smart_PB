@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- DEPLOY_TEST_MARKER: 2026-01-22 -->
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -1282,8 +1283,46 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
         const lat = parseFloat(document.getElementById('f-lat').value) || 15.38;
         const lng = parseFloat(document.getElementById('f-lng').value) || 100.02;
         if(miniMapInstance) miniMapInstance.remove();
-        miniMapInstance = L.map('miniMap').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMapInstance);
+        miniMapInstance = L.map('miniMap', { zoomControl: false }).setView([lat, lng], 15);
+        // Define street and satellite layers for mini map
+        window.miniStreetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+        window.miniSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+        // Add default layer (street)
+        window.miniStreetLayer.addTo(miniMapInstance);
+        // Remove any existing toggle button
+        const existingBtn = document.getElementById('miniMapToggle'); if(existingBtn) existingBtn.remove();
+        // Create satellite toggle button
+        const btn = document.createElement('button');
+        btn.id = 'miniMapToggle';
+        btn.type = 'button';
+        btn.title = 'Toggle Satellite';
+        btn.innerText = 'SAT';
+        btn.style.position = 'absolute';
+        btn.style.top = '8px';
+        btn.style.right = '8px';
+        btn.style.zIndex = 9999;
+        btn.style.padding = '6px 8px';
+        btn.style.borderRadius = '8px';
+        btn.style.border = '1px solid rgba(0,0,0,0.08)';
+        btn.style.background = 'white';
+        btn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
+        btn.style.fontSize = '12px';
+        btn.style.cursor = 'pointer';
+        btn.onclick = function() {
+            const isSat = miniMapInstance.hasLayer(window.miniSatLayer);
+            if(isSat) {
+                miniMapInstance.removeLayer(window.miniSatLayer);
+                miniMapInstance.addLayer(window.miniStreetLayer);
+                btn.innerText = 'SAT';
+            } else {
+                miniMapInstance.removeLayer(window.miniStreetLayer);
+                miniMapInstance.addLayer(window.miniSatLayer);
+                btn.innerText = 'MAP';
+            }
+        };
+        // Attach button into miniMap container
+        const miniContainer = document.getElementById('miniMap');
+        if(miniContainer) miniContainer.appendChild(btn);
         miniMarker = L.marker([lat, lng], { draggable: true }).addTo(miniMapInstance);
         miniMarker.on('dragend', function() {
             const pos = miniMarker.getLatLng();
