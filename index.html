@@ -141,23 +141,43 @@
         }
 
         .stat-card {
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             border-radius: 2.5rem;
-            border: 1px solid #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            position: relative;
+            overflow: hidden;
         }
 
         .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 30px -10px rgba(30, 64, 175, 0.1);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(30, 64, 175, 0.2);
             border-color: #1e40af;
+            background: white;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+            transition: background 0.3s;
+        }
+
+        .stat-card:hover::after {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
         }
 
         .stat-card.active-filter {
             border: 3px solid #1e40af;
             background-color: #eff6ff;
+            box-shadow: 0 20px 25px -5px rgba(30, 64, 175, 0.2);
         }
 
         .tab-btn.active {
@@ -264,33 +284,55 @@
         }
 
         #left-sidebar .sidebar-nav button {
-            width: 100%;
+            width: calc(100% - 1.5rem);
+            margin: 0.25rem 0.75rem;
             text-align: left;
-            padding: 1rem 1.5rem;
+            padding: 0.875rem 1.25rem;
             color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            transition: all 0.2s;
-            border-left: 4px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 1rem;
+            position: relative;
         }
 
         #left-sidebar .sidebar-nav button:hover {
             background: rgba(255, 255, 255, 0.1);
             color: white;
+            transform: translateX(5px);
         }
 
         #left-sidebar .sidebar-nav button.active {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border-left-color: #fbbf24;
-            font-weight: 600;
+            background: white !important;
+            color: #1e40af !important;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+        }
+
+        /* Hover states with different colors for modern feel */
+        #left-sidebar .sidebar-nav button[data-view="landing"]:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        #left-sidebar .sidebar-nav button[id="nav-hub"]:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        #left-sidebar .sidebar-nav button[data-view="public-report"]:hover {
+            background: rgba(239, 68, 68, 0.2);
         }
 
         #left-sidebar .sidebar-nav button i {
-            width: 1.25rem;
+            width: 1.5rem;
             text-align: center;
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+        }
+
+        #left-sidebar .sidebar-nav button:hover i {
+            transform: scale(1.2);
         }
 
         #left-sidebar .sidebar-footer {
@@ -357,6 +399,117 @@
 
             #sidebar-overlay.active {
                 display: block;
+            }
+        }
+
+        /* Modal & Form Enhancements */
+        .modal-container {
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 50;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 2.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .modal-footer {
+            position: sticky;
+            bottom: 0;
+            background: #f8fafc;
+            z-index: 50;
+            border-top: 1px solid #f1f5f9;
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Float Action Buttons */
+        #scroll-to-top {
+            position: fixed;
+            bottom: 5rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(30, 64, 175, 0.4);
+            cursor: pointer;
+            z-index: 4000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(20px);
+        }
+
+        #scroll-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #scroll-to-top:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 15px 30px rgba(30, 64, 175, 0.5);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Mobile Modal Fullscreen */
+        @media (max-width: 640px) {
+            .modal-container {
+                max-height: 100vh;
+                height: 100vh;
+                border-radius: 0 !important;
+            }
+
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding: 1.25rem;
+            }
+
+            #scroll-to-top {
+                bottom: 2rem;
+                right: 1.5rem;
             }
         }
     </style>
@@ -447,16 +600,23 @@
                 <i class="fas fa-user-lock"></i> เข้าสู่ระบบ
             </button>
             <div id="userProfile" class="hidden">
-                <div class="flex items-center space-x-3 bg-white/10 p-3 rounded-xl">
-                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm"
+                <div class="flex items-center space-x-3 p-3 rounded-xl relative overflow-hidden"
+                    style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(59, 130, 246, 0.25)); border: 2px solid rgba(250, 204, 21, 0.6); box-shadow: 0 0 20px rgba(250, 204, 21, 0.3);">
+                    <div class="absolute inset-0 bg-gradient-to-r from-green-400/10 to-blue-400/10 animate-pulse"></div>
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-lg relative z-10"
+                        style="background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);"
                         id="userInitial">AD</div>
-                    <div class="flex-1">
-                        <span class="text-xs font-bold text-white block leading-tight" id="userNameDisplay">Admin</span>
-                        <span class="text-[10px] text-blue-200 font-medium uppercase"
+                    <div class="flex-1 relative z-10">
+                        <span class="text-sm font-black text-white block leading-tight drop-shadow"
+                            id="userNameDisplay">Admin</span>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5"
+                            style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1e3a8a;"
                             id="userRoleDisplay">Administrator</span>
                     </div>
-                    <button onclick="window.logout()" class="text-white/50 hover:text-red-400 transition p-2">
-                        <i class="fas fa-power-off"></i>
+                    <button onclick="window.logout()"
+                        class="text-white/70 hover:text-red-400 transition p-2 relative z-10 hover:scale-110"
+                        title="ออกจากระบบ">
+                        <i class="fas fa-power-off text-lg"></i>
                     </button>
                 </div>
             </div>
@@ -618,9 +778,94 @@
                 .hub-tab-btn:not(.active):hover {
                     background: #e2e8f0;
                 }
+
+                .map-floating-panel {
+                    position: absolute;
+                    top: 1.5rem;
+                    right: 1.5rem;
+                    z-index: 1000;
+                    background: white;
+                    border-radius: 1.5rem;
+                    padding: 1.25rem;
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #f1f5f9;
+                    width: 220px;
+                }
             </style>
             <!-- Tab Content Panels -->
-            <div id="hub-content-map" class="hub-panel"></div>
+            <div id="hub-content-map" class="hub-panel p-6 relative">
+                <div class="max-w-7xl mx-auto relative">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div>
+                            <h2 class="text-4xl font-black text-slate-800 tracking-tight">Interactive Map</h2>
+                            <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1">Real-time
+                                Location Intelligence</p>
+                        </div>
+                        <div
+                            class="flex items-center gap-2 bg-white/80 p-1.5 rounded-2xl border shadow-sm backdrop-blur">
+                            <button onclick="toggleMapLayer('street')" id="btn-layer-street"
+                                class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md transition">แผนที่ปกติ</button>
+                            <button onclick="toggleMapLayer('sat')" id="btn-layer-sat"
+                                class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition">ดาวเทียม</button>
+                            <div class="w-px h-6 bg-slate-200 mx-1"></div>
+                            <button onclick="toggleCoverageLayer()" id="btn-coverage"
+                                class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition"><i
+                                    class="fas fa-bullseye mr-1"></i> แสดงรัศมีเสียง</button>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div id="map"
+                            class="h-[70vh] rounded-[2.5rem] overflow-hidden border-8 border-white shadow-2xl"></div>
+
+                        <!-- Floating Map Filters -->
+                        <div class="map-floating-panel">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-[10px] font-black text-slate-800 uppercase tracking-widest">Map Filters
+                                </h4>
+                                <button onclick="window.clearMapFilters()"
+                                    class="text-[10px] text-blue-600 font-black uppercase hover:underline">Clear</button>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label
+                                        class="text-[9px] font-black text-slate-400 uppercase block mb-1.5 ml-1">Status</label>
+                                    <select id="map-filter-status" onchange="applyMapFilter()"
+                                        class="w-full bg-slate-50 border-none rounded-xl p-3 text-[11px] font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="all">ทั้งหมด (All Status)</option>
+                                        <option value="Operational">พร้อมใช้งาน</option>
+                                        <option value="Under Repair">รอการซ่อม</option>
+                                        <option value="Maintenance">บำรุงรักษา</option>
+                                        <option value="Inactive">ปิดใช้งาน</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-400 uppercase block mb-1.5 ml-1">Zone
+                                        Area</label>
+                                    <select id="map-filter-zone" onchange="applyMapFilter()"
+                                        class="w-full bg-slate-50 border-none rounded-xl p-3 text-[11px] font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="all">ทุกโซน (All Zones)</option>
+                                        <option value="1">Zone 1</option>
+                                        <option value="2">Zone 2</option>
+                                        <option value="3">Zone 3</option>
+                                        <option value="4">Zone 4</option>
+                                        <option value="5">Zone 5</option>
+                                        <option value="6">Zone 6</option>
+                                        <option value="7">Zone 7</option>
+                                        <option value="8">Zone 8</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="map-filter-indicator" class="mt-4 pt-3 border-t border-slate-50 hidden">
+                                <p class="text-[10px] font-black text-blue-600 flex items-center gap-1.5">
+                                    <i class="fas fa-info-circle"></i> Showing <span id="map-filtered-count">0</span>
+                                    points
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id="hub-content-data" class="hub-panel hidden"></div>
             <div id="hub-content-dashboard" class="hub-panel hidden"></div>
         </section>
@@ -685,41 +930,41 @@
                 </div>
 
                 <!-- Executive Summary & KPI -->
-                <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                     <div onclick="applyDashFilter('all')"
-                        class="stat-card p-4 border shadow-sm text-center active-filter" id="filter-all">
-                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1">ทั้งหมด</p>
-                        <h3 class="text-2xl font-black text-slate-900" id="db-total">0</h3>
+                        class="stat-card p-8 border shadow-sm text-center active-filter" id="filter-all">
+                        <p class="text-[11px] font-black text-slate-400 uppercase mb-2 tracking-widest">ทั้งหมด</p>
+                        <h3 class="text-5xl font-black text-slate-900" id="db-total">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Operational')" class="stat-card p-4 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Operational')" class="stat-card p-8 border shadow-sm text-center"
                         id="filter-Operational">
-                        <p class="text-[9px] font-black text-green-500 uppercase mb-1"><i
+                        <p class="text-[11px] font-black text-green-500 uppercase mb-2 tracking-widest"><i
                                 class="fas fa-check-circle mr-1"></i>พร้อมใช้</p>
-                        <h3 class="text-2xl font-black text-green-600" id="db-ok">0</h3>
+                        <h3 class="text-5xl font-black text-green-600" id="db-ok">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Under Repair')" class="stat-card p-4 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Under Repair')" class="stat-card p-8 border shadow-sm text-center"
                         id="filter-UnderRepair">
-                        <p class="text-[9px] font-black text-orange-500 uppercase mb-1"><i
+                        <p class="text-[11px] font-black text-orange-500 uppercase mb-2 tracking-widest"><i
                                 class="fas fa-wrench mr-1"></i>แจ้งซ่อม</p>
-                        <h3 class="text-2xl font-black text-orange-600" id="db-repair">0</h3>
+                        <h3 class="text-5xl font-black text-orange-600" id="db-repair">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Maintenance')" class="stat-card p-4 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Maintenance')" class="stat-card p-8 border shadow-sm text-center"
                         id="filter-Maintenance">
-                        <p class="text-[9px] font-black text-blue-500 uppercase mb-1"><i
+                        <p class="text-[11px] font-black text-blue-500 uppercase mb-2 tracking-widest"><i
                                 class="fas fa-tools mr-1"></i>บำรุงรักษา</p>
-                        <h3 class="text-2xl font-black text-blue-600" id="db-maint">0</h3>
+                        <h3 class="text-5xl font-black text-blue-600" id="db-maint">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Inactive')" class="stat-card p-4 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Inactive')" class="stat-card p-8 border shadow-sm text-center"
                         id="filter-Inactive">
-                        <p class="text-[9px] font-black text-slate-400 uppercase mb-1"><i
+                        <p class="text-[11px] font-black text-slate-400 uppercase mb-2 tracking-widest"><i
                                 class="fas fa-power-off mr-1"></i>ปิดใช้งาน</p>
-                        <h3 class="text-2xl font-black text-slate-500" id="db-inactive">0</h3>
+                        <h3 class="text-5xl font-black text-slate-500" id="db-inactive">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Pending')" class="stat-card p-4 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Pending')" class="stat-card p-8 border shadow-sm text-center"
                         id="filter-Pending">
-                        <p class="text-[9px] font-black text-yellow-500 uppercase mb-1"><i
+                        <p class="text-[11px] font-black text-yellow-500 uppercase mb-2 tracking-widest"><i
                                 class="fas fa-hourglass-half mr-1"></i>รอติดตั้ง</p>
-                        <h3 class="text-2xl font-black text-yellow-600" id="db-pending">0</h3>
+                        <h3 class="text-5xl font-black text-yellow-600" id="db-pending">0</h3>
                     </div>
                 </div>
 
@@ -741,59 +986,37 @@
                         (New)</button>
                 </div>
 
-                <!-- Charts: Broadcast Analytics -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-shadow-none">
-
-                    <div
-                        class="bg-white/90 backdrop-blur p-10 rounded-[3.5rem] shadow-sm border border-slate-100 text-shadow-none">
-                        <div class="flex justify-between items-center mb-6">
-                            <h4 class="font-black text-slate-800 flex items-center text-shadow-none"><i
-                                    class="fas fa-chart-line mr-2 text-green-600"></i> Availability Trend</h4>
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="text-[10px] bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold">เทียบรายเดือน</span>
-                            </div>
-                        </div>
-                        <canvas id="availabilityTrendChart" height="220"></canvas>
-                        <div class="flex justify-center gap-6 mt-4">
-                            <span class="flex items-center text-[10px] text-slate-500"><span
-                                    class="w-3 h-3 rounded-full bg-green-500 mr-1"></span>เดือนปัจจุบัน</span>
-                            <span class="flex items-center text-[10px] text-slate-500"><span
-                                    class="w-3 h-3 rounded-full bg-slate-300 mr-1"></span>เดือนก่อน</span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Maintenance History & Calendar -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-shadow-none">
                     <!-- Recent Maintenance History -->
-                    <div class="bg-white/90 backdrop-blur p-8 rounded-[3rem] shadow-sm border border-slate-100">
-                        <h4 class="font-black text-slate-800 mb-6 flex items-center">
-                            <i class="fas fa-tools mr-2 text-orange-500"></i> ประวัติซ่อมล่าสุด
+                    <div
+                        class="bg-white/90 backdrop-blur p-10 rounded-[3.5rem] shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-300">
+                        <h4 class="text-2xl font-black text-slate-800 mb-8 flex items-center">
+                            <i class="fas fa-tools mr-3 text-orange-500 text-3xl"></i> ประวัติซ่อมบำรุงล่าสุด
                             <span
-                                class="ml-auto text-[10px] bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-bold">5
+                                class="ml-auto text-xs bg-orange-100 text-orange-600 px-4 py-2 rounded-full font-bold">5
                                 รายการล่าสุด</span>
                         </h4>
-                        <div id="recentMaintenanceList" class="space-y-3">
-                            <div class="text-center py-8 text-slate-300">
-                                <i class="fas fa-spinner animate-spin text-2xl mb-2"></i>
-                                <p class="text-xs">กำลังโหลดข้อมูล...</p>
+                        <div id="recentMaintenanceList" class="space-y-4">
+                            <div class="text-center py-12 text-slate-300">
+                                <i class="fas fa-spinner animate-spin text-4xl mb-3"></i>
+                                <p class="text-lg font-bold">กำลังโหลดข้อมูล...</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Maintenance Calendar -->
-                    <div class="bg-white/90 backdrop-blur p-8 rounded-[3rem] shadow-sm border border-slate-100">
-                        <h4 class="font-black text-slate-800 mb-6 flex items-center">
-                            <i class="fas fa-calendar-alt mr-2 text-purple-500"></i> ปฏิทินบำรุงรักษา
-                            <span
-                                class="ml-auto text-[10px] bg-purple-100 text-purple-600 px-3 py-1 rounded-full font-bold"
+                    <div
+                        class="bg-white/90 backdrop-blur p-10 rounded-[3.5rem] shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-300">
+                        <h4 class="text-2xl font-black text-slate-800 mb-8 flex items-center">
+                            <i class="fas fa-calendar-alt mr-3 text-purple-500 text-3xl"></i> ปฏิทินบำรุงรักษา
+                            <span class="ml-auto text-xs bg-purple-100 text-purple-600 px-4 py-2 rounded-full font-bold"
                                 id="currentMonth">เดือนนี้</span>
                         </h4>
-                        <div id="maintenanceCalendar" class="space-y-2">
+                        <div id="maintenanceCalendar" class="space-y-4">
                             <!-- Calendar Grid -->
                             <div
-                                class="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-slate-400 uppercase mb-2">
+                                class="grid grid-cols-7 gap-2 text-center text-xs font-black text-slate-400 uppercase mb-4">
                                 <div>อา</div>
                                 <div>จ</div>
                                 <div>อ</div>
@@ -802,17 +1025,40 @@
                                 <div>ศ</div>
                                 <div>ส</div>
                             </div>
-                            <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+                            <div id="calendarGrid" class="grid grid-cols-7 gap-2">
                                 <!-- Calendar days will be injected -->
                             </div>
                         </div>
-                        <div class="mt-4 flex gap-2 flex-wrap">
-                            <span class="flex items-center text-[10px] text-slate-500"><span
-                                    class="w-3 h-3 rounded-full bg-green-400 mr-1"></span>พร้อมใช้งาน</span>
-                            <span class="flex items-center text-[10px] text-slate-500"><span
-                                    class="w-3 h-3 rounded-full bg-orange-400 mr-1"></span>มีการซ่อมบำรุง</span>
-                            <span class="flex items-center text-[10px] text-slate-500"><span
-                                    class="w-3 h-3 rounded-full bg-purple-400 mr-1"></span>กำหนดการบำรุงรักษา</span>
+                        <div class="mt-8 flex gap-3 flex-wrap">
+                            <span class="flex items-center text-xs font-bold text-slate-500"><span
+                                    class="w-4 h-4 rounded-full bg-green-400 mr-2 shadow-sm"></span>พร้อมใช้งาน</span>
+                            <span class="flex items-center text-xs font-bold text-slate-500"><span
+                                    class="w-4 h-4 rounded-full bg-orange-400 mr-2 shadow-sm"></span>มีการซ่อมบำรุง</span>
+                            <span class="flex items-center text-xs font-bold text-slate-500"><span
+                                    class="w-4 h-4 rounded-full bg-purple-400 mr-2 shadow-sm"></span>กำหนดการบำรุงรักษา</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts: Broadcast Analytics -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 text-shadow-none">
+
+                    <div
+                        class="bg-white/90 backdrop-blur p-10 rounded-[3.5rem] shadow-lg border border-slate-100 text-shadow-none">
+                        <div class="flex justify-between items-center mb-8">
+                            <h4 class="text-2xl font-black text-slate-800 flex items-center text-shadow-none"><i
+                                    class="fas fa-chart-line mr-3 text-green-600 text-3xl"></i> Availability Trend</h4>
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="text-xs bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold">เทียบรายเดือน</span>
+                            </div>
+                        </div>
+                        <canvas id="availabilityTrendChart" height="220"></canvas>
+                        <div class="flex justify-center gap-8 mt-6">
+                            <span class="flex items-center text-xs font-bold text-slate-500"><span
+                                    class="w-4 h-4 rounded-full bg-green-500 mr-2"></span>เดือนปัจจุบัน</span>
+                            <span class="flex items-center text-xs font-bold text-slate-500"><span
+                                    class="w-4 h-4 rounded-full bg-slate-300 mr-2"></span>เดือนก่อน</span>
                         </div>
                     </div>
                 </div>
@@ -1038,16 +1284,32 @@
         </section>
 
         <!-- 7. PUBLIC REPORT VIEW (Mobile-Friendly for QR Scan) -->
-        <section id="view-public-report" class="spa-view p-4 md:p-8">
-            <div class="max-w-lg mx-auto space-y-6">
-                <!-- Header -->
-                <div class="text-center py-6">
-                    <div
-                        class="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl">
-                        <i class="fas fa-bullhorn text-white text-3xl"></i>
+        <section id="view-public-report" class="spa-view relative">
+            <!-- Sticky Header for Long Form -->
+            <div
+                class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b p-4 shadow-sm flex items-center justify-between no-print">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-bullhorn text-lg"></i>
                     </div>
-                    <h2 class="text-2xl font-black text-slate-900">แจ้งปัญหาลำโพง</h2>
-                    <p class="text-slate-500 text-sm mt-1">กรุณากรอกข้อมูลด้านล่างเพื่อแจ้งปัญหา</p>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">แจ้งปัญหาจุดติดตั้ง</h3>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Public
+                            Report Form</p>
+                    </div>
+                </div>
+                <button onclick="showView('landing')"
+                    class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="max-w-lg mx-auto py-8 px-6 space-y-6">
+                <!-- Header Icon (Visual Only) -->
+                <div class="text-center py-4">
+                    <h2 class="text-2xl font-black text-slate-900">แจ้งปัญหาลำโพงขัดข้อง</h2>
+                    <p class="text-slate-500 font-medium text-sm mt-1">กรุณากรอกข้อมูลเพื่อแจ้งให้เจ้าหน้าที่เข้าตรวจสอบ
+                    </p>
                 </div>
 
                 <!-- Report Form -->
@@ -1651,52 +1913,65 @@
 
     <!-- Announcement Modal (Public PR) -->
     <div id="announcementModal"
-        class="hidden fixed inset-0 bg-slate-900/60 z-[5000] flex items-center justify-center p-6 backdrop-blur-md no-print">
-        <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-slideUp">
-            <div class="text-center space-y-2 mb-6">
-                <div
-                    class="w-16 h-16 bg-purple-50 text-purple-700 rounded-3xl flex items-center justify-center text-2xl mx-auto mb-4">
-                    <i class="fas fa-newspaper"></i>
-                </div>
-                <h3 class="text-2xl font-black text-slate-900 tracking-tight">ฝากประชาสัมพันธ์</h3>
-                <p class="text-slate-400 text-sm font-medium">ข้อความจะแสดงบนหน้าเว็บไซต์หลังผ่านการตรวจสอบ</p>
-            </div>
-            <form id="announcementForm" onsubmit="window.submitAnnouncement(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">หัวข้อ/เรื่อง <span
-                            class="text-red-500">*</span></label>
-                    <input type="text" id="ann-title" placeholder="เช่น งานลอยกระทง, ตลาดนัดสีเขียว" required
-                        class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">รายละเอียด (สั้นๆ)</label>
-                    <textarea id="ann-detail" rows="2" placeholder="วันที่ เวลา สถานที่..."
-                        class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium resize-none"></textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">ผู้ฝาก/หน่วยงาน</label>
-                    <input type="text" id="ann-contact" placeholder="ชื่อ-นามสกุล, เบอร์โทร (ไม่บังคับ)"
-                        class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">แนบไฟล์ (ไม่บังคับ)</label>
-                    <div id="ann-file-dropzone"
-                        class="w-full bg-slate-50 border-2 border-dashed border-slate-300 p-6 rounded-2xl text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition">
-                        <i class="fas fa-cloud-upload-alt text-3xl text-slate-300 mb-2"></i>
-                        <p class="text-sm text-slate-400 font-medium">คลิกหรือลากไฟล์มาวาง</p>
-                        <p class="text-[10px] text-slate-400 mt-1">รูปภาพ (JPG, PNG, GIF) หรือ PDF • สูงสุด 3 ไฟล์ •
-                            ไม่เกิน 5 MB/ไฟล์</p>
-                        <input type="file" id="ann-files" multiple accept=".jpg,.jpeg,.png,.gif,.pdf" class="hidden">
+        class="hidden fixed inset-0 bg-slate-900/60 z-[5000] flex items-center justify-center p-0 sm:p-6 backdrop-blur-md no-print">
+        <div class="modal-container w-full max-w-md rounded-[3rem] shadow-2xl animate-slideUp">
+            <div class="modal-header">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fas fa-newspaper"></i>
                     </div>
-                    <div id="ann-file-preview" class="mt-3 space-y-2"></div>
+                    <h3 class="text-xl font-black text-slate-900 tracking-tight">ฝากประชาสัมพันธ์</h3>
                 </div>
-                <button type="submit"
-                    class="w-full bg-purple-600 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition">
+                <button onclick="window.closeAnnouncementModal()"
+                    class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="modal-body custom-scroll">
+                <p class="text-slate-400 text-sm font-medium mb-6">ข้อความจะแสดงบนหน้าเว็บไซต์หลังผ่านการตรวจสอบ</p>
+                <form id="announcementForm" onsubmit="window.submitAnnouncement(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">หัวข้อ/เรื่อง <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="ann-title" placeholder="เช่น งานลอยกระทง, ตลาดนัดสีเขียว" required
+                            class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">รายละเอียด (สั้นๆ)</label>
+                        <textarea id="ann-detail" rows="3" placeholder="วันที่ เวลา สถานที่..."
+                            class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">ผู้ฝาก/หน่วยงาน</label>
+                        <input type="text" id="ann-contact" placeholder="ชื่อ-นามสกุล, เบอร์โทร (ไม่บังคับ)"
+                            class="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">แนบไฟล์ (ไม่บังคับ)</label>
+                        <div id="ann-file-dropzone"
+                            class="w-full bg-slate-50 border-2 border-dashed border-slate-300 p-6 rounded-2xl text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-slate-300 mb-2"></i>
+                            <p class="text-sm text-slate-400 font-medium">คลิกหรือลากไฟล์มาวาง</p>
+                            <p class="text-[10px] text-slate-400 mt-1">รูปภาพ (JPG, PNG, GIF) หรือ PDF • สูงสุด 3 ไฟล์ •
+                                ไม่เกิน 5 MB/ไฟล์</p>
+                            <input type="file" id="ann-files" multiple accept=".jpg,.jpeg,.png,.gif,.pdf"
+                                class="hidden">
+                        </div>
+                        <div id="ann-file-preview" class="mt-3 space-y-2"></div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" form="announcementForm"
+                    class="flex-1 bg-purple-600 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition hover:bg-purple-700">
                     <i class="fas fa-paper-plane mr-2"></i>ส่งฝากประกาศ
                 </button>
                 <button type="button" onclick="window.closeAnnouncementModal()"
-                    class="w-full text-slate-400 text-[10px] font-bold uppercase tracking-widest text-center mt-2">ยกเลิก</button>
-            </form>
+                    class="bg-slate-100 text-slate-500 px-6 py-4 rounded-2xl font-bold hover:bg-slate-200 transition">ยกเลิก</button>
+            </div>
         </div>
     </div>
 
@@ -1764,243 +2039,285 @@
 
     <!-- Point CRUD Modal -->
     <div id="pointModal"
-        class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print text-shadow-none text-shadow-none text-shadow-none">
-        <div
-            class="bg-white w-full max-w-4xl rounded-[3rem] p-10 shadow-2xl animate-slideUp overflow-y-auto max-h-[95vh] text-shadow-none text-shadow-none text-shadow-none">
-            <div class="flex justify-between items-center mb-8 border-b pb-4 text-shadow-none text-shadow-none">
-                <h3 id="modalTitle" class="text-3xl font-black text-slate-900 tracking-tight text-shadow-none">
-                    จัดการข้อมูลพิกัด</h3>
-                <button onclick="window.closePointModal()"
-                    class="text-slate-300 hover:text-slate-600 transition text-shadow-none text-shadow-none text-shadow-none"><i
-                        class="fas fa-times text-2xl text-shadow-none"></i></button>
+        class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-0 sm:p-6 backdrop-blur-md no-print text-shadow-none">
+        <div class="modal-container w-full max-w-4xl rounded-[3rem] shadow-2xl animate-slideUp text-shadow-none">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modalTitle" class="text-2xl font-black text-slate-900 tracking-tight">จัดการข้อมูลพิกัด</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Point Control
+                        Interface</p>
+                </div>
+                <button onclick="window.closePointModal()" class="text-slate-400 hover:text-slate-600 transition p-2">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
             </div>
-            <div class="flex space-x-6 mb-8 border-b text-sm overflow-x-auto">
-                <button onclick="window.setPointTab('general')"
-                    class="tab-btn active pb-3 px-2 text-shadow-none whitespace-nowrap"
-                    id="tab-general">ข้อมูลพื้นฐาน</button>
-                <button onclick="window.setPointTab('location')"
-                    class="tab-btn pb-3 px-2 text-shadow-none whitespace-nowrap" id="tab-location">พิกัดแผนที่</button>
-                <button onclick="window.setPointTab('media')"
-                    class="tab-btn pb-3 px-2 text-shadow-none whitespace-nowrap" id="tab-media">รูปภาพ</button>
-                <button onclick="window.setPointTab('maintenance')"
-                    class="tab-btn pb-3 px-2 text-shadow-none whitespace-nowrap"
-                    id="tab-maintenance">ประวัติซ่อม</button>
-            </div>
-            <form id="pointForm" onsubmit="window.savePoint(event)">
-                <input type="hidden" id="f-id">
 
-                <!-- Tab 1: General Info -->
-                <div id="tab-content-general" class="grid grid-cols-1 md:grid-cols-2 gap-6 text-shadow-none">
-                    <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-2">หมายเลข
-                            (Number)</label><input type="number" id="f-number" required
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-shadow-none">
-                    </div>
-                    <div class="space-y-1"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">โซนพื้นที่ (Zone)</label>
-                        <select id="f-zone"
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">ไม่ระบุโซน</option>
-                            <option value="1">Zone 1</option>
-                            <option value="2">Zone 2</option>
-                            <option value="3">Zone 3</option>
-                            <option value="4">Zone 4</option>
-                            <option value="5">Zone 5</option>
-                            <option value="6">Zone 6</option>
-                            <option value="7">Zone 7</option>
-                            <option value="8">Zone 8</option>
-                            <option value="9">Zone 9</option>
-                            <option value="10">Zone 10</option>
-                        </select>
-                    </div>
-                    <div class="col-span-2 space-y-1 text-shadow-none"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2 text-shadow-none">ตำแหน่ง
-                            Landmark</label><input type="text" id="f-position" required
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none text-shadow-none">
-                    </div>
-                    <div class="space-y-1"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">หมายเลขครุภัณฑ์ (Inventory
-                            No.)</label><input type="text" id="f-inv"
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none"
-                            placeholder="เช่น 12345-UT" /></div>
-                    <div class="space-y-1"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">เลขซีเรียล (Serial
-                            No.)</label><input type="text" id="f-serial"
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none"
-                            placeholder="เช่น SN-00001" /></div>
-                    <div class="space-y-1 text-shadow-none"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">ประเภทการติดตั้ง</label><select
-                            id="f-install-type" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none">
-                            <option value="Old">จุดดั้งเดิม</option>
-                            <option value="New">จุดติดตั้งใหม่</option>
-                            <option value="Moved">จุดย้ายพิกัด</option>
-                        </select></div>
-                    <div class="admin-only-ui hidden space-y-1 text-shadow-none text-shadow-none"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">สถานี OLT</label>
-                        <select id="f-olt"
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">เลือกสถานี OLT</option>
-                            <option value="OLT_เทคนิคอุทัยFTTx">OLT_เทคนิคอุทัยFTTx</option>
-                            <option value="OLT_อทัยธานี_C600">OLT_อทัยธานี_C600</option>
-                            <option value="อุทัยธานี (FTTx)">อุทัยธานี (FTTx)</option>
-                            <option value="Calix ปากกะบาด">Calix ปากกะบาด</option>
-                            <option value="Calix ศูนย์ราชการ">Calix ศูนย์ราชการ</option>
-                            <option value="OLT_NTหมอธิวา">OLT_NTหมอธิวา</option>
-                            <option value="OLT_แยกพระชนกFTTX">OLT_แยกพระชนกFTTX</option>
-                            <option value="Calix สค.อุทัยธานี">Calix สค.อุทัยธานี</option>
-                            <option value="OLT_แยก บขส.อน.FTTx">OLT_แยก บขส.อน.FTTx</option>
-                            <option value="OLT_เนินตูม">OLT_เนินตูม</option>
-                            <option value="ZTE บกภ.อุทัยธานี NT1">ZTE บกภ.อุทัยธานี NT1</option>
-                        </select>
-                    </div>
-                    <div class="space-y-1 text-shadow-none text-shadow-none"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">สถานะ</label><select
-                            id="f-status" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none">
-                            <option value="Operational">Operational (พร้อมใช้งาน)</option>
-                            <option value="Under Repair">Under Repair (แจ้งซ่อม)</option>
-                            <option value="Maintenance">Maintenance (บำรุงรักษา)</option>
-                            <option value="Inactive">Inactive (ปิดใช้งานชั่วคราว)</option>
-                            <option value="Pending">Pending (รอติดตั้ง/ตรวจสอบ)</option>
-                        </select></div>
-                    <div class="space-y-1 flex gap-2">
-                        <div class="flex-1">
-                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ขนาดลำโพง</label>
-                            <select id="f-size"
-                                class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="100">100 วัตต์</option>
-                                <option value="30">30 วัตต์</option>
+            <div class="modal-body custom-scroll">
+                <!-- Sticky Tabs inside Body -->
+                <div
+                    class="flex space-x-4 mb-8 border-b text-sm overflow-x-auto sticky top-[-2rem] bg-white z-20 pb-2 pt-2">
+                    <button onclick="window.setPointTab('general')"
+                        class="tab-btn active pb-3 px-4 whitespace-nowrap font-bold transition-all"
+                        id="tab-general">ข้อมูลพื้นฐาน</button>
+                    <button onclick="window.setPointTab('location')"
+                        class="tab-btn pb-3 px-4 whitespace-nowrap font-bold transition-all"
+                        id="tab-location">พิกัดแผนที่</button>
+                    <button onclick="window.setPointTab('media')"
+                        class="tab-btn pb-3 px-4 whitespace-nowrap font-bold transition-all"
+                        id="tab-media">รูปภาพ</button>
+                    <button onclick="window.setPointTab('maintenance')"
+                        class="tab-btn pb-3 px-4 whitespace-nowrap font-bold transition-all"
+                        id="tab-maintenance">ประวัติซ่อม</button>
+                </div>
+
+                <form id="pointForm" onsubmit="window.savePoint(event)">
+                    <input type="hidden" id="f-id">
+
+                    <div id="tab-content-general" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">หมายเลขพิกัด
+                                (ID)</label>
+                            <input type="number" id="f-number" required
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-lg font-bold">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">โซนพื้นที่
+                                (Zone)</label>
+                            <select id="f-zone"
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold">
+                                <option value="">ไม่ระบุโซน</option>
+                                <optgroup label="Zones 1-5">
+                                    <option value="1">Zone 1</option>
+                                    <option value="2">Zone 2</option>
+                                    <option value="3">Zone 3</option>
+                                    <option value="4">Zone 4</option>
+                                    <option value="5">Zone 5</option>
+                                </optgroup>
+                                <optgroup label="Zones 6-10">
+                                    <option value="6">Zone 6</option>
+                                    <option value="7">Zone 7</option>
+                                    <option value="8">Zone 8</option>
+                                    <option value="9">Zone 9</option>
+                                    <option value="10">Zone 10</option>
+                                </optgroup>
                             </select>
                         </div>
-                        <div class="w-1/3">
-                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">จำนวน (ตัว)</label>
-                            <input type="number" id="f-amount" value="2"
-                                class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none text-center outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="col-span-2 space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">ชื่อตำแหน่ง
+                                / สถานที่ใกล้เคียง (Landmark)</label>
+                            <input type="text" id="f-position" required
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold"
+                                placeholder="ระบุตำแหน่งให้ชัดเจน เช่น ตรงข้ามตู้ ATM กสิกร">
                         </div>
-                    </div>
-                    <div class="col-span-2 space-y-1"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">หมายเหตุสั้นๆ</label><input
-                            type="text" id="f-remark"
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none"
-                            placeholder="หมายเหตุ เช่น สถานที่ติดตั้งพิเศษ" /></div>
-                    <div class="col-span-2 space-y-1"><label
-                            class="text-[10px] font-black text-slate-400 uppercase ml-2">โน้ตเพิ่มเติม</label><textarea
-                            id="f-notes"
-                            class="w-full bg-slate-50 border-none p-4 rounded-2xl outline-none text-shadow-none"
-                            rows="3" placeholder="บันทึกข้อมูลเพิ่มเติม..."></textarea></div>
-                </div>
-
-                <!-- Tab 2: Location -->
-                <div id="tab-content-location" class="hidden space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1 text-shadow-none"><label
-                                class="text-[10px] font-black text-slate-400 uppercase ml-2">Latitude</label><input
-                                type="text" id="f-lat" required class="w-full bg-slate-50 border-none p-4 rounded-2xl">
+                        <div class="space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">หมายเลขครุภัณฑ์
+                                (Inventory)</label>
+                            <input type="text" id="f-inv"
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none focus:border-blue-500 transition-all font-medium"
+                                placeholder="เช่น 12345-UT">
                         </div>
-                        <div class="space-y-1 text-shadow-none text-shadow-none"><label
-                                class="text-[10px] font-black text-slate-400 uppercase ml-2">Longitude</label><input
-                                type="text" id="f-lng" required
-                                class="w-full bg-slate-50 border-none p-4 rounded-2xl text-shadow-none"></div>
-                    </div>
-                    <p class="text-[10px] text-blue-600 font-bold uppercase"><i class="fas fa-info-circle mr-1"></i>
-                        ลากหมุดในแผนที่ด้านล่างเพื่อปรับตำแหน่งพิกัด</p>
-                    <div id="miniMap"></div>
-                </div>
-
-                <!-- Tab 3: Media (Real Image Upload) -->
-                <div id="tab-content-media" class="hidden space-y-6">
-                    <div
-                        class="bg-blue-50 p-4 rounded-2xl text-xs text-blue-800 mb-4 border border-blue-100 flex items-start">
-                        <i class="fas fa-info-circle mt-1 mr-2"></i>
-                        <div>
-                            <p class="font-bold">ระบบอัปโหลดรูปภาพ</p>
-                            <p>รองรับไฟล์ JPG/PNG ขนาดไม่เกิน 500KB ต่อรูป ระบบจะทำการย่อขนาดอัตโนมัติก่อนบันทึก</p>
+                        <div class="space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">ซีเรียลนัมเบอร์
+                                (Serial No.)</label>
+                            <input type="text" id="f-serial"
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none focus:border-blue-500 transition-all font-medium"
+                                placeholder="เช่น SN-XXXXXXXX">
                         </div>
-                    </div>
-
-                    <input type="file" id="imgInput" accept="image/*" class="hidden"
-                        onchange="window.handleImageUpload(event)">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="image-gallery-container">
-                        <div class="bg-slate-50 p-6 rounded-[2rem] border-2 border-dashed border-slate-200 text-center hover:bg-blue-50 hover:border-blue-300 transition cursor-pointer flex flex-col items-center justify-center min-h-[150px]"
-                            onclick="document.getElementById('imgInput').click()">
-                            <div
-                                class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-2 text-blue-500 text-xl">
-                                <i class="fas fa-plus"></i>
+                        <div class="space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">สถานะการทำงาน</label>
+                            <select id="f-status"
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none border-l-8 border-l-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-bold">
+                                <option value="Operational">พร้อมใช้งาน (Operational)</option>
+                                <option value="Under Repair" style="color: red;">🚨 รอการซ่อม (Under Repair)</option>
+                                <option value="Maintenance">🛠️ บำรุงรักษา (Maintenance)</option>
+                                <option value="Inactive">🌑 ปิดใช้งาน (Inactive)</option>
+                                <option value="Pending">⌛ รอตรวจสอบ (Pending)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">ประเภทอุปกรณ์</label>
+                            <select id="f-install-type"
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none">
+                                <option value="Old">จุดดั้งเดิม</option>
+                                <option value="New">จุดติดตั้งใหม่</option>
+                                <option value="Moved">จุดย้ายพิกัด</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-1 space-y-1.5">
+                                <label
+                                    class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">ขนาดลำโพง</label>
+                                <select id="f-size"
+                                    class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none font-bold">
+                                    <option value="100">100 วัตต์</option>
+                                    <option value="30">30 วัตต์</option>
+                                </select>
                             </div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase">เพิ่มรูปภาพ</p>
+                            <div class="w-1/3 space-y-1.5">
+                                <label
+                                    class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">จํานวน</label>
+                                <input type="number" id="f-amount" value="2"
+                                    class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl text-center outline-none font-bold">
+                            </div>
                         </div>
-                        <!-- Images will be injected here -->
-                    </div>
-                </div>
-
-                <!-- Tab 4: Maintenance (Real History) -->
-                <div id="tab-content-maintenance" class="hidden space-y-6 text-shadow-none">
-                    <div class="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
-                        <h4 class="font-bold text-slate-900 mb-4">เพิ่มบันทึกการซ่อมบำรุง</h4>
-                        <input type="hidden" id="m-edit-index">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <input type="date" id="m-date"
-                                class="bg-white p-3 rounded-xl border border-slate-200 text-xs">
-                            <input type="text" id="m-title" placeholder="หัวข้อการซ่อม/แจ้งเหตุ"
-                                class="col-span-2 bg-white p-3 rounded-xl border border-slate-200 text-xs">
-                        </div>
-                        <textarea id="m-desc" placeholder="รายละเอียดการดำเนินการแก้ไข..."
-                            class="w-full bg-white p-3 rounded-xl border border-slate-200 text-xs mb-4 h-20"></textarea>
-                        <button type="button"
-                            class="bg-blue-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg hover:bg-blue-700 transition"
-                            onclick="window.addMaintenanceRecord()">
-                            <i class="fas fa-save mr-1"></i> บันทึกรายการ
-                        </button>
-                    </div>
-
-                    <div class="px-2">
-                        <h4 class="font-bold text-slate-900 text-sm mb-4">ประวัติการดำเนินงาน</h4>
-                        <div class="border-l-2 border-slate-200 ml-4 pl-8 space-y-8 py-2 relative"
-                            id="maintenance-timeline">
-                            <!-- Timeline items will be injected here -->
+                        <div class="col-span-2 space-y-1.5">
+                            <label
+                                class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">หมายเหตุเพิ่มเติม</label>
+                            <textarea id="f-notes"
+                                class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl outline-none focus:border-blue-500 transition-all font-medium h-32 resize-none"
+                                placeholder="บันทึกข้อมูลสำคัญที่ควรทราบ..."></textarea>
                         </div>
                     </div>
-                </div>
 
-                <div class="flex gap-4 pt-10 border-t mt-8 text-shadow-none">
-                    <button type="submit"
-                        class="flex-1 bg-blue-800 text-white py-4 rounded-[1.5rem] font-black shadow-xl active:scale-95 transition text-shadow-none hover:bg-blue-700">บันทึกข้อมูลทั้งหมด</button>
-                    <button type="button" id="deletePointBtn" onclick="window.deletePoint()"
-                        class="bg-red-50 text-red-500 px-8 rounded-[1.5rem] font-bold hover:bg-red-500 hover:text-white transition uppercase text-xs">Delete</button>
-                </div>
-            </form>
+                    <div id="tab-content-location" class="hidden space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">Latitude</label>
+                                <input type="text" id="f-lat" required
+                                    class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl font-mono">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label
+                                    class="text-[11px] font-black text-slate-500 uppercase ml-2 tracking-wider">Longitude</label>
+                                <input type="text" id="f-lng" required
+                                    class="w-full bg-slate-50 border border-slate-200 p-5 rounded-3xl font-mono">
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-2xl flex items-center gap-3 border border-blue-100">
+                            <i class="fas fa-info-circle text-blue-500"></i>
+                            <p class="text-xs text-blue-700 font-bold">
+                                คุณสามารถลากหมุดในแผนที่เพื่อปรับพิกัดได้อย่างอิสระ</p>
+                        </div>
+                        <div id="miniMap" class="rounded-[2.5rem] border-4 border-slate-100 shadow-inner h-[400px]">
+                        </div>
+                    </div>
+
+                    <div id="tab-content-media" class="hidden space-y-6">
+                        <div class="bg-indigo-50 p-6 rounded-3xl border border-indigo-100 flex items-start gap-4">
+                            <div
+                                class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shrink-0 shadow-sm">
+                                <i class="fas fa-images"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-indigo-900">คลังรูปภาพจุดติดตั้ง</h4>
+                                <p class="text-xs text-indigo-700 mt-1 leading-relaxed">รองรับไฟล์ JPG/PNG
+                                    ระบบจะทำการบีบอัดขนาดให้อัตโนมัติเพื่อความรวดเร็วในการโหลด</p>
+                            </div>
+                        </div>
+                        <input type="file" id="imgInput" accept="image/*" class="hidden"
+                            onchange="window.handleImageUpload(event)">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-6" id="image-gallery-container">
+                            <div class="bg-slate-50 p-8 rounded-[3rem] border-2 border-dashed border-slate-200 text-center hover:bg-blue-50 hover:border-blue-400 transition-all cursor-pointer flex flex-col items-center justify-center min-h-[200px]"
+                                onclick="document.getElementById('imgInput').click()">
+                                <div
+                                    class="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-md mb-4 text-blue-500 text-2xl">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest">เพิ่มรูปภาพ</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-content-maintenance" class="hidden space-y-8">
+                        <div class="bg-slate-50 p-8 rounded-[3rem] border border-slate-200 shadow-inner">
+                            <h4 class="font-black text-slate-900 mb-6 flex items-center gap-2"><i
+                                    class="fas fa-file-signature text-blue-600"></i> ลงบันทึกประวัติการซ่อม</h4>
+                            <input type="hidden" id="m-edit-index">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div class="space-y-1.5">
+                                    <label
+                                        class="text-[10px] font-black text-slate-400 uppercase ml-2">วันที่เข้าดำเนินการ</label>
+                                    <input type="date" id="m-date"
+                                        class="w-full bg-white p-5 rounded-2xl border border-slate-200 font-bold focus:border-blue-500 outline-none">
+                                </div>
+                                <div class="md:col-span-2 space-y-1.5">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">หัวข้อ /
+                                        อาการที่พบ</label>
+                                    <input type="text" id="m-title" placeholder="เช่น แก้ไขเสียงแตก, เปลี่ยนไดรเวอร์"
+                                        class="w-full bg-white p-5 rounded-2xl border border-slate-200 font-bold focus:border-blue-500 outline-none">
+                                </div>
+                            </div>
+                            <div class="space-y-1.5 mb-6">
+                                <label
+                                    class="text-[10px] font-black text-slate-400 uppercase ml-2">รายละเอียดขั้นตอนการแก้ไข</label>
+                                <textarea id="m-desc" placeholder="อธิบายรายละเอียดการซ่อม..."
+                                    class="w-full bg-white p-5 rounded-2xl border border-slate-200 font-medium h-32 resize-none focus:border-blue-500 outline-none"></textarea>
+                            </div>
+                            <button type="button"
+                                class="w-full bg-blue-800 text-white py-5 rounded-2xl font-black shadow-xl hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                onclick="window.addMaintenanceRecord()">
+                                <i class="fas fa-plus-circle text-lg"></i> เพิ่มประวัติการซ่อมบำรุง
+                            </button>
+                        </div>
+                        <div>
+                            <h4
+                                class="font-black text-slate-900 mb-6 ml-2 uppercase text-xs tracking-widest text-slate-400">
+                                Time-line ประวัติการดำเนินงาน</h4>
+                            <div id="maintenance-timeline" class="space-y-6 pl-2 border-l-4 border-slate-50 ml-4"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" form="pointForm"
+                    class="flex-1 bg-gradient-to-r from-blue-700 to-blue-900 text-white py-5 rounded-2xl font-black shadow-2xl active:scale-95 transition-all hover:shadow-blue-500/30 flex items-center justify-center gap-2">
+                    <i class="fas fa-save text-lg"></i> บันทึกข้อมูลทั้งหมด
+                </button>
+                <button type="button" id="deletePointBtn" onclick="window.deletePoint()"
+                    class="bg-red-50 text-red-500 px-10 rounded-2xl font-black hover:bg-red-600 hover:text-white active:scale-95 transition-all text-xs uppercase tracking-widest">
+                    ลบพิกัด
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Report Modal (Summary) -->
     <div id="reportModal"
-        class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print">
-        <div
-            class="bg-white w-full max-w-4xl rounded-[3rem] p-10 shadow-2xl animate-slideUp overflow-y-auto max-h-[95vh]">
-            <div class="flex justify-between items-center mb-8 border-b pb-4">
+        class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-0 sm:p-6 backdrop-blur-md no-print">
+        <div class="modal-container w-full max-w-4xl rounded-[3rem] shadow-2xl animate-slideUp">
+            <div class="modal-header">
                 <div>
-                    <h3 class="text-3xl font-black text-slate-900 tracking-tight">Executive Report</h3>
-                    <p class="text-slate-400 text-sm font-medium" id="report-date">Date</p>
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tight">Executive Report</h3>
+                    <p class="text-[10px] text-slate-400 font-bold mt-1" id="report-date">Date</p>
                 </div>
-                <button onclick="window.closeReportModal()" class="text-slate-300 hover:text-slate-600 transition"><i
-                        class="fas fa-times text-2xl"></i></button>
+                <button onclick="window.closeReportModal()" class="text-slate-400 hover:text-slate-600 transition p-2">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
             </div>
-            <div class="grid grid-cols-3 gap-6 mb-8">
-                <div class="bg-blue-50 p-6 rounded-3xl text-center">
-                    <p class="text-xs text-blue-400 uppercase font-black">Total Nodes</p>
-                    <h4 class="text-4xl font-black text-blue-900 mt-2" id="r-total">0</h4>
+
+            <div class="modal-body custom-scroll">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="bg-blue-50 p-6 rounded-[2rem] text-center border border-blue-100">
+                        <p class="text-[10px] text-blue-400 uppercase font-black tracking-widest">Total Nodes</p>
+                        <h4 class="text-5xl font-black text-blue-900 mt-2" id="r-total">0</h4>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-[2rem] text-center border border-green-100">
+                        <p class="text-[10px] text-green-400 uppercase font-black tracking-widest">Health Score</p>
+                        <h4 class="text-5xl font-black text-green-600 mt-2" id="r-health">0%</h4>
+                    </div>
+                    <div class="bg-orange-50 p-6 rounded-[2rem] text-center border border-orange-100">
+                        <p class="text-[10px] text-orange-400 uppercase font-black tracking-widest">Issues Found</p>
+                        <h4 class="text-5xl font-black text-orange-600 mt-2" id="r-backlog">0</h4>
+                    </div>
                 </div>
-                <div class="bg-green-50 p-6 rounded-3xl text-center">
-                    <p class="text-xs text-green-400 uppercase font-black">Health Score</p>
-                    <h4 class="text-4xl font-black text-green-600 mt-2" id="r-health">0%</h4>
-                </div>
-                <div class="bg-orange-50 p-6 rounded-3xl text-center">
-                    <p class="text-xs text-orange-400 uppercase font-black">Issues</p>
-                    <h4 class="text-4xl font-black text-orange-600 mt-2" id="r-backlog">0</h4>
-                </div>
+                <div id="report-table-container"></div>
             </div>
-            <div id="report-table-container"></div>
-            <button onclick="window.triggerPrint()"
-                class="mt-8 w-full bg-slate-900 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-slate-800 transition">พิมพ์รายงาน
-                (Print)</button>
+
+            <div class="modal-footer">
+                <button onclick="window.triggerPrint()"
+                    class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition flex items-center justify-center gap-2">
+                    <i class="fas fa-print"></i> พิมพ์รายงานสรุปผล
+                </button>
+            </div>
         </div>
     </div>
 
@@ -2056,7 +2373,37 @@
         </div>
     </div>
 
-    <!-- Firebase & Logic -->
+    <!-- Global Scroll to Top Button -->
+    <div id="scroll-to-top" onclick="window.scrollToTop()">
+        <i class="fas fa-arrow-up text-xl"></i>
+    </div>
+
+    <script>
+        // Scroll to Top Logic
+        window.onscroll = function () {
+            const btn = document.getElementById('scroll-to-top');
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        };
+
+        window.scrollToTop = function () {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        };
+
+        // Modal Body Scroll to Top Helper
+        window.modalScrollToTop = function (modalId) {
+            const modalBody = document.querySelector(`#${modalId} .modal-body`);
+            if (modalBody) {
+                modalBody.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
@@ -2498,31 +2845,50 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
         function applyMapFilter() {
             if (!mapInstance || !window.speakerPoints) return;
-            markers.forEach(m => mapInstance.removeLayer(m)); markers = [];
-            const filtered = window.speakerPoints.filter(p => currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter);
-            filtered.forEach(p => {
-                const lat = parseFloat(p.Latitude); const lng = parseFloat(p.Longitude);
-                if (!isNaN(lat) && !isNaN(lng)) {
+            markers.forEach(m => mapInstance.removeLayer(m));
+            markers = [];
 
-                    // --- COLOR LOGIC (UPDATED) ---
-                    let color = '#10b981'; // Default Green (Operational)
+            // Get Map Floating Panel Filters
+            const filterStatus = document.getElementById('map-filter-status').value;
+            const filterZone = document.getElementById('map-filter-zone').value;
+
+            // Apply filters: Global Dash Filter + Map Floating Filters
+            const filtered = window.speakerPoints.filter(p => {
+                const globalMatch = currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter;
+                const statusMatch = filterStatus === 'all' || p.Status === filterStatus;
+                const zoneMatch = filterZone === 'all' || String(p.Zone) === filterZone;
+                return globalMatch && statusMatch && zoneMatch;
+            });
+
+            // Update Filter Results Indicator
+            const indicator = document.getElementById('map-filter-indicator');
+            const countDisplay = document.getElementById('map-filtered-count');
+            if (indicator && countDisplay) {
+                if (filterStatus !== 'all' || filterZone !== 'all') {
+                    indicator.classList.remove('hidden');
+                    countDisplay.innerText = filtered.length;
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            filtered.forEach(p => {
+                const lat = parseFloat(p.Latitude);
+                const lng = parseFloat(p.Longitude);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    let color = '#10b981';
                     const status = (p.Status || '').toLowerCase();
                     const type = (p.InstallType || '').toLowerCase();
 
-                    if (status === 'under repair') {
-                        color = '#b91c1c'; // Dark Red (Important)
-                    } else if (type === 'moved') {
-                        color = '#9333ea'; // Purple
-                    } else if (type === 'new') {
-                        color = '#06b6d4'; // Cyan
-                    } else if (type === 'old') {
-                        color = '#1d4ed8'; // Blue
-                    }
+                    if (status === 'under repair') color = '#b91c1c';
+                    else if (type === 'moved') color = '#9333ea';
+                    else if (type === 'new') color = '#06b6d4';
+                    else if (type === 'old') color = '#1d4ed8';
 
-                    // Smart Marker Construction with Number
                     const iconHtml = `<div class="marker-pin">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" fill="white" stroke="${color}" stroke-width="2.5"/>
+                        <circle cx="12" cy="12" r="8" fill="${color}" fill-opacity="0.1"/>
                         <path d="M10 8L7 11H5V13H7L10 16V8Z" fill="${color}"/>
                         <path d="M12 9C13.5 10.5 13.5 13.5 12 15" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
                         <path d="M14 7C16.5 9.5 16.5 14.5 14 17" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
@@ -2542,87 +2908,143 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                         draggable: currentUser && currentUser.role === 'Admin'
                     }).addTo(mapInstance);
 
-                    m.on('dragend', function (e) {
-                        const newPos = e.target.getLatLng();
-                        if (confirm(`ยืนยันการย้ายพิกัด #${p.Number}?`)) {
-                            window.updatePointCoord(p.id, newPos.lat.toFixed(6), newPos.lng.toFixed(6));
-                        } else {
-                            applyMapFilter();
-                        }
-                    });
+                    // Improved Popup Content
+                    const popupContent = `
+                    <div class="p-3 w-64">
+                        <div class="h-32 bg-slate-50 rounded-2xl mb-3 overflow-hidden border border-slate-100 flex items-center justify-center">
+                            ${p.Images && p.Images.length > 0 ? `<img src="${p.Images[0]}" class="w-full h-full object-cover">` : `<i class="fas fa-image text-slate-200 text-3xl"></i>`}
+                            <div class="absolute top-2 right-2 flex gap-1">
+                                <span class="bg-blue-600 text-white px-2 py-1 rounded-lg text-[10px] font-black">#${p.Number}</span>
+                            </div>
+                        </div>
+                        <h4 class="font-black text-slate-800 text-sm mb-1">${p.Position}</h4>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-black uppercase">Zone ${p.Zone}</span>
+                            <span class="text-[9px] ${status === 'operational' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} px-2 py-0.5 rounded font-black uppercase">${p.Status}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="bg-green-600 text-white py-2 rounded-xl text-[10px] font-black text-center"><i class="fas fa-location-arrow mr-1"></i> นำทาง</a>
+                            <button onclick="window.openFullDetailModal('${p.id}')" class="bg-blue-800 text-white py-2 rounded-xl text-[10px] font-black"><i class="fas fa-info-circle mr-1"></i> รายละเอียด</button>
+                        </div>
+                    </div>`;
 
-                    // Improved Popup with Quick Edit
-                    const popupContent = `<div class="p-2 w-60 font-sans">
-                    <div class="h-32 bg-slate-100 rounded-lg mb-2 overflow-hidden relative">
-                        ${p.Images && p.Images.length > 0 ? `<img src="${p.Images[0]}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300"><i class="fas fa-image text-3xl"></i></div>`}
-                        <span class="absolute top-2 right-2 bg-blue-900 text-white text-[10px] px-2 py-1 rounded-full font-bold">#${p.Number}</span>
-                    </div>
-                    <h3 class="font-bold text-slate-800 text-sm mb-1 line-clamp-1">${p.Position}</h3>
-                    <div class="flex gap-2 mb-2 text-[10px] font-medium text-slate-500">
-                        <span class="bg-slate-100 px-2 py-0.5 rounded">Zone ${p.Zone}</span>
-                        <span class="${p.Status === 'Operational' ? 'text-green-600' : 'text-red-600 font-bold'}">${p.Status}</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 mt-3">
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="bg-green-600 text-white text-center py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition"><i class="fas fa-location-arrow mr-1"></i> นำทาง</a>
-                        <button onclick="window.openFullDetailModal('${p.id}')" class="bg-blue-800 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition"><i class="fas fa-file-alt mr-1"></i> รายละเอียด</button>
-                        ${(currentUser && currentUser.role === 'Admin') ?
-                            `<button onclick="window.openPointModal('${p.id}')" class="col-span-2 bg-yellow-500 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-600 transition shadow-sm border border-yellow-600/20"><i class="fas fa-edit mr-1"></i> แก้ไขด่วน (Quick Edit)</button>` : ''}
-                    </div>
-                </div>`;
-                    m.bindPopup(popupContent, { maxWidth: 300 });
+                    m.bindPopup(popupContent, { maxWidth: 300, className: 'custom-popup' });
                     markers.push(m);
                 }
             });
+
+            // Re-render Coverage Layer if active
+            if (isCoverageVisible) {
+                isCoverageVisible = false; // Toggle trick to force re-render
+                toggleCoverageLayer();
+            }
         }
 
-        // --- BOUNDARY FUNCTIONS ---
-        window.toggleBoundaryEdit = function () {
-            if (!currentUser || currentUser.role !== 'Admin') return alert("สำหรับ Admin เท่านั้น");
-            isDrawingBoundary = !isDrawingBoundary;
-            const btn = document.getElementById('boundaryBtn');
-            const controls = document.getElementById('boundaryControls');
+        let isCoverageVisible = false;
+        let coverageLayerInstance = null;
 
-            if (isDrawingBoundary) {
-                btn.classList.add('bg-red-500');
-                btn.innerHTML = '<i class="fas fa-times"></i>';
-                controls.classList.remove('hidden');
-                tempBoundary = [];
-                // Optional: load existing to edit
-                if (window.cityBoundary.length > 0 && confirm("ต้องการแก้ไขเส้นเดิมหรือไม่?")) {
-                    tempBoundary = [...window.cityBoundary];
-                    renderTempBoundary();
-                } else {
-                    window.cityBoundary = []; // clear visual
-                    window.refreshBoundary();
-                }
+        window.toggleCoverageLayer = function () {
+            if (coverageLayerInstance) {
+                mapInstance.removeLayer(coverageLayerInstance);
+                coverageLayerInstance = null;
+            }
+
+            isCoverageVisible = !isCoverageVisible;
+            const btn = document.getElementById('btn-coverage');
+
+            if (isCoverageVisible) {
+                btn.classList.add('bg-blue-600', 'text-white');
+                btn.classList.remove('text-slate-500');
+
+                coverageLayerInstance = L.layerGroup();
+                const filtered = window.speakerPoints.filter(p => {
+                    const globalMatch = currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter;
+                    const statusMatch = document.getElementById('map-filter-status').value === 'all' || p.Status === document.getElementById('map-filter-status').value;
+                    const zoneMatch = document.getElementById('map-filter-zone').value === 'all' || String(p.Zone) === document.getElementById('map-filter-zone').value;
+                    return globalMatch && statusMatch && zoneMatch;
+                });
+
+                filtered.forEach(p => {
+                    const lat = parseFloat(p.Latitude);
+                    const lng = parseFloat(p.Longitude);
+                    const range = p.Speaker_size === '100' ? 250 : 100;
+
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        // Background coverage area
+                        L.circle([lat, lng], {
+                            radius: range,
+                            color: '#3b82f6',
+                            fillColor: '#3b82f6',
+                            fillOpacity: 0.15,
+                            weight: 1
+                        }).addTo(coverageLayerInstance);
+
+                        // Animated Pulse Circle (Outer)
+                        const pulseCircle = L.circle([lat, lng], {
+                            radius: range,
+                            color: '#3b82f6',
+                            fillOpacity: 0,
+                            weight: 2,
+                            className: 'coverage-pulse'
+                        }).addTo(coverageLayerInstance);
+
+                        // Inner strong ring
+                        L.circle([lat, lng], {
+                            radius: 30,
+                            color: '#1e40af',
+                            fillColor: '#1e40af',
+                            fillOpacity: 0.3,
+                            weight: 1
+                        }).addTo(coverageLayerInstance);
+                    }
+                });
+                coverageLayerInstance.addTo(mapInstance);
             } else {
-                btn.classList.remove('bg-red-500');
-                btn.innerHTML = '<i class="fas fa-pen-nib"></i>';
-                controls.classList.add('hidden');
-                renderTempBoundary(); // clear temp markers
-                window.refreshBoundary(); // restore saved
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-slate-500');
             }
         };
 
-        function renderTempBoundary() {
-            // Clear previous layer
-            if (boundaryLayer) mapInstance.removeLayer(boundaryLayer);
-            // Clear temp markers
-            tempBoundaryMarkers.forEach(m => mapInstance.removeLayer(m));
-            tempBoundaryMarkers = [];
+        // Map Layer Toggle Function
+        window.toggleMapLayer = function (layerType) {
+            if (!mapInstance) return;
+            const streetBtn = document.getElementById('btn-layer-street');
+            const satBtn = document.getElementById('btn-layer-sat');
 
-            // Draw Polygon
-            if (tempBoundary.length > 0) {
-                boundaryLayer = L.polygon(tempBoundary, { color: 'purple', dashArray: '5, 5', fillOpacity: 0.1 }).addTo(mapInstance);
-
-                // Draw Vertex Markers
-                tempBoundary.forEach(pt => {
-                    const m = L.circleMarker(pt, { radius: 4, color: 'purple', fillColor: 'white', fillOpacity: 1 }).addTo(mapInstance);
-                    tempBoundaryMarkers.push(m);
-                });
+            if (layerType === 'street') {
+                if (window.satLayer) mapInstance.removeLayer(window.satLayer);
+                if (window.streetLayer) window.streetLayer.addTo(mapInstance);
+                // Update button styles
+                streetBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+                streetBtn.classList.remove('text-slate-500', 'hover:bg-slate-50');
+                satBtn.classList.remove('bg-blue-600', 'text-white', 'shadow-md');
+                satBtn.classList.add('text-slate-500', 'hover:bg-slate-50');
+            } else if (layerType === 'sat') {
+                if (window.streetLayer) mapInstance.removeLayer(window.streetLayer);
+                if (window.satLayer) window.satLayer.addTo(mapInstance);
+                // Update button styles
+                satBtn.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+                satBtn.classList.remove('text-slate-500', 'hover:bg-slate-50');
+                streetBtn.classList.remove('bg-blue-600', 'text-white', 'shadow-md');
+                streetBtn.classList.add('text-slate-500', 'hover:bg-slate-50');
             }
-        }
+        };
 
+        window.clearMapFilters = function () {
+            document.getElementById('map-filter-status').value = 'all';
+            document.getElementById('map-filter-zone').value = 'all';
+            applyMapFilter();
+            Swal.fire({
+                icon: 'info',
+                title: 'ล้างตัวกรองแผนที่แล้ว',
+                timer: 1000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        };
+
+        // --- BOUNDARY FUNCTIONS ---
         window.refreshBoundary = function () {
             if (boundaryLayer) mapInstance.removeLayer(boundaryLayer);
             // Clear temp markers just in case
@@ -4025,15 +4447,15 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                         ? `<div class="h-40 w-full mb-4 rounded-2xl bg-cover bg-center" style="background-image: url('${p.Images[0]}')"></div>`
                         : `<div class="h-40 w-full mb-4 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-200"><i class="fas fa-image text-4xl"></i></div>`;
 
-                    return `<div class="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm flex flex-col justify-between group hover:border-blue-200 transition text-shadow-none cursor-pointer" onclick="window.openFullDetailModal('${p.id}')">
-                    <div class="space-y-4">
+                    return `<div class="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-lg flex flex-col justify-between group hover:border-blue-400 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 text-shadow-none cursor-pointer" onclick="window.openFullDetailModal('${p.id}')">
+                    <div class="space-y-5">
                         ${imgHtml}
-                        <div class="flex justify-between items-center"><span class="text-xs font-black text-blue-900 text-shadow-none">#${p.Number}</span><span class="px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[9px] font-bold uppercase tracking-widest">${p.Zone ? 'ZONE ' + p.Zone : 'ไม่ระบุ'}</span></div>
-                        <h4 class="font-black text-lg text-slate-800 leading-tight group-hover:text-blue-800 transition text-shadow-none">${p.Position}</h4>
+                        <div class="flex justify-between items-center"><span class="text-sm font-black text-blue-900 bg-blue-50 px-3 py-1 rounded-lg text-shadow-none">ID: #${p.Number}</span><span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-black uppercase tracking-widest">${p.Zone ? 'ZONE ' + p.Zone : 'ไม่ระบุ'}</span></div>
+                        <h4 class="font-black text-2xl text-slate-800 leading-tight group-hover:text-blue-800 transition text-shadow-none">${p.Position}</h4>
                     </div>
-                    <div class="pt-6 border-t mt-6 flex justify-between items-center">
-                        ${getStatusBadge(p.Status)}
-                        ${currentUser ? `<button class="text-blue-600 text-[10px] font-black uppercase hover:underline" onclick="event.stopPropagation(); window.openPointModal('${p.id}')">Manage <i class="fas fa-arrow-right ml-1"></i></button>` : `<i class="fas fa-lock text-slate-200"></i>`}
+                    <div class="pt-8 border-t border-slate-100 mt-8 flex justify-between items-center">
+                        ${getStatusBadge(p.Status).replace('text-[10px]', 'text-xs py-2 px-4 shadow-sm')}
+                        ${currentUser ? `<button class="text-blue-600 text-xs font-black uppercase hover:underline flex items-center gap-1" onclick="event.stopPropagation(); window.openPointModal('${p.id}')">แก้ไข <i class="fas fa-arrow-right"></i></button>` : `<i class="fas fa-lock text-slate-200"></i>`}
                     </div>
                 </div>`;
                 }).join('')}</div>`;
@@ -4101,57 +4523,7 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             if (boundaryLayer) boundaryLayer.bringToBack(); // Keep boundary at back
         };
 
-        // --- SOUND COVERAGE LAYER ---
-        let coverageLayerGroup = null;
-        let isCoverageVisible = false;
-
-        window.toggleCoverageLayer = function () {
-            const btn = document.getElementById('btn-coverage');
-            if (isCoverageVisible) {
-                // Remove coverage circles
-                if (coverageLayerGroup && mapInstance) {
-                    mapInstance.removeLayer(coverageLayerGroup);
-                }
-                isCoverageVisible = false;
-                btn.classList.remove('bg-blue-100', 'text-blue-800');
-                btn.classList.add('text-slate-400');
-            } else {
-                // Create coverage circles
-                if (!mapInstance) return;
-                const circles = [];
-                (window.speakerPoints || []).forEach(p => {
-                    const lat = parseFloat(p.Latitude);
-                    const lng = parseFloat(p.Longitude);
-                    if (isNaN(lat) || isNaN(lng)) return;
-
-                    // Calculate radius based on speaker size (wattage)
-                    const speakerSize = parseInt(p.Speaker_size) || 100;
-                    const speakerAmount = parseInt(p.Speakers_amount) || 2;
-                    const baseRadius = speakerSize * 1.2; // Base: 100W = ~120m radius
-                    const radius = baseRadius * (1 + (speakerAmount - 1) * 0.2); // +20% per extra speaker
-
-                    // Color based on status
-                    let color = '#22c55e'; // Green for operational
-                    if (p.Status === 'Under Repair' || p.Status === 'Maintenance') color = '#f97316';
-                    if (p.Status === 'Inactive') color = '#94a3b8';
-
-                    const circle = L.circle([lat, lng], {
-                        radius: radius,
-                        color: color,
-                        fillColor: color,
-                        fillOpacity: 0.15,
-                        weight: 1,
-                        opacity: 0.5
-                    });
-                    circles.push(circle);
-                });
-                coverageLayerGroup = L.layerGroup(circles);
-                coverageLayerGroup.addTo(mapInstance);
-                isCoverageVisible = true;
-                btn.classList.remove('text-slate-400');
-                btn.classList.add('bg-blue-100', 'text-blue-800');
-            }
-        };
+        // Sound coverage handled globally via consolidated toggleCoverageLayer
 
         // Show combined Hub view with tabs
         let currentHubTab = 'map';
@@ -4328,12 +4700,12 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
             container.innerHTML = recent.map(m => {
                 const dateStr = new Date(m.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
-                return `<div class="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-orange-200 transition">
-                    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 font-black text-sm shrink-0">#${m.pointNumber}</div>
+                return `<div class="flex items-start gap-5 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-orange-200 transition-all duration-300">
+                    <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 font-black text-lg shrink-0 shadow-sm">#${m.pointNumber}</div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-xs text-orange-500 font-bold">${dateStr}</p>
-                        <p class="text-sm font-bold text-slate-800 truncate">${m.title}</p>
-                        <p class="text-xs text-slate-500 line-clamp-1">${m.pointPosition}</p>
+                        <p class="text-sm text-orange-500 font-bold mb-1">${dateStr}</p>
+                        <p class="text-xl font-black text-slate-800 truncate mb-1">${m.title}</p>
+                        <p class="text-sm text-slate-500 font-medium">${m.pointPosition}</p>
                     </div>
                 </div>`;
             }).join('');
@@ -4375,8 +4747,8 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             for (let day = 1; day <= daysInMonth; day++) {
                 const isToday = day === now.getDate();
                 const hasMaintenance = maintenanceDates.has(day);
-                const bgClass = isToday ? 'bg-blue-600 text-white' : hasMaintenance ? 'bg-orange-100 text-orange-600' : 'bg-slate-50 text-slate-600';
-                html += `<div class="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold ${bgClass} hover:scale-110 transition cursor-default">${day}</div>`;
+                const bgClass = isToday ? 'bg-blue-600 text-white shadow-lg' : hasMaintenance ? 'bg-orange-100 text-orange-600 ring-2 ring-orange-200' : 'bg-slate-50 text-slate-600';
+                html += `<div class="h-12 w-12 rounded-xl flex items-center justify-center text-base font-black ${bgClass} hover:scale-110 transition cursor-default shadow-sm border border-black/5">${day}</div>`;
             }
             grid.innerHTML = html;
         }
@@ -4390,91 +4762,41 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
         // --- Map marker colors for new statuses ---
         const originalApplyMapFilter = applyMapFilter;
-        applyMapFilter = function () {
-            if (!mapInstance || !window.speakerPoints) return;
-            markers.forEach(m => mapInstance.removeLayer(m)); markers = [];
-            const filtered = window.speakerPoints.filter(p => currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter);
-            filtered.forEach(p => {
-                const lat = parseFloat(p.Latitude); const lng = parseFloat(p.Longitude);
-                if (!isNaN(lat) && !isNaN(lng)) {
+        // applyMapFilter is defined globally with filter logic
+    </script>
 
-                    // Extended color logic for new statuses
-                    let color = '#10b981'; // Default Green
-                    const status = (p.Status || '').toLowerCase();
-                    const type = (p.InstallType || '').toLowerCase();
+    <!-- Floating Scroll-to-Top Button -->
+    <div id="scroll-to-top"
+        class="fixed bottom-20 right-8 w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-2xl shadow-2xl flex items-center justify-center cursor-pointer transform translate-y-20 opacity-0 transition-all duration-500 z-[4500] hover:scale-110 active:scale-95 group"
+        onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <div class="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition"></div>
+        <i class="fas fa-chevron-up text-xl"></i>
+    </div>
 
-                    if (status === 'under repair') color = '#b91c1c';
-                    else if (status === 'maintenance') color = '#eab308';
-                    else if (status === 'inactive') color = '#64748b';
-                    else if (status === 'pending') color = '#ec4899';
-                    else if (type === 'moved') color = '#9333ea';
-                    else if (type === 'new') color = '#06b6d4';
-                    else if (type === 'old') color = '#1d4ed8';
-
-                    const iconHtml = `<div class="marker-pin">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" fill="white" stroke="${color}" stroke-width="2.5"/>
-                            <path d="M10 8L7 11H5V13H7L10 16V8Z" fill="${color}"/>
-                            <path d="M12 9C13.5 10.5 13.5 13.5 12 15" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M14 7C16.5 9.5 16.5 14.5 14 17" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                        <span class="marker-number" style="color: ${status === 'under repair' ? '#7f1d1d' : '#1e3a8a'}">${p.Number}</span>
-                    </div>`;
-
-                    const icon = L.divIcon({
-                        html: iconHtml,
-                        iconSize: [48, 48],
-                        iconAnchor: [24, 48],
-                        className: 'custom-div-icon'
-                    });
-
-                    const m = L.marker([lat, lng], {
-                        icon: icon,
-                        draggable: currentUser && currentUser.role === 'Admin'
-                    }).addTo(mapInstance);
-
-                    m.on('dragend', function (e) {
-                        const newPos = e.target.getLatLng();
-                        Swal.fire({
-                            title: `ย้ายพิกัด #${p.Number}?`,
-                            text: 'ยืนยันการเปลี่ยนตำแหน่งจุดติดตั้ง',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#1e40af',
-                            cancelButtonColor: '#64748b',
-                            confirmButtonText: 'ยืนยัน',
-                            cancelButtonText: 'ยกเลิก'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.updatePointCoord(p.id, newPos.lat.toFixed(6), newPos.lng.toFixed(6));
-                            } else {
-                                applyMapFilter();
-                            }
-                        });
-                    });
-
-                    const popupContent = `<div class="p-2 w-60 font-sans">
-                        <div class="h-32 bg-slate-100 rounded-lg mb-2 overflow-hidden relative">
-                            ${p.Images && p.Images.length > 0 ? `<img src="${p.Images[0]}" class="w-full h-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-300"><i class="fas fa-image text-3xl"></i></div>`}
-                            <span class="absolute top-2 right-2 bg-blue-900 text-white text-[10px] px-2 py-1 rounded-full font-bold">#${p.Number}</span>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-sm mb-1 line-clamp-1">${p.Position}</h3>
-                        <div class="flex gap-2 mb-2 text-[10px] font-medium text-slate-500">
-                            <span class="bg-slate-100 px-2 py-0.5 rounded">${p.Zone ? 'Zone ' + p.Zone : 'ไม่ระบุโซน'}</span>
-                            <span class="${p.Status === 'Operational' ? 'text-green-600' : 'text-red-600 font-bold'}">${p.Status}</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 mt-3">
-                            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="bg-green-600 text-white text-center py-1.5 rounded-lg text-xs font-bold hover:bg-green-700 transition"><i class="fas fa-location-arrow mr-1"></i> นำทาง</a>
-                            <button onclick="window.openFullDetailModal('${p.id}')" class="bg-blue-800 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition"><i class="fas fa-file-alt mr-1"></i> รายละเอียด</button>
-                            ${(currentUser && currentUser.role === 'Admin') ?
-                            `<button onclick="window.openPointModal('${p.id}')" class="col-span-2 bg-yellow-500 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-600 transition shadow-sm border border-yellow-600/20"><i class="fas fa-edit mr-1"></i> แก้ไขด่วน</button>` : ''}
-                        </div>
-                    </div>`;
-                    m.bindPopup(popupContent, { maxWidth: 300 });
-                    markers.push(m);
+    <script>
+        // Scroll Listener for FAB and Sticky Elements
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('scroll-to-top');
+            if (btn) {
+                if (window.scrollY > 400) {
+                    btn.classList.add('show');
+                    btn.classList.remove('translate-y-20', 'opacity-0');
+                    btn.classList.add('translate-y-0', 'opacity-100');
+                } else {
+                    btn.classList.remove('show');
+                    btn.classList.add('translate-y-20', 'opacity-0');
+                    btn.classList.remove('translate-y-0', 'opacity-100');
                 }
-            });
-        };
+            }
+        });
+
+        // Global Refresh on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("Uthai Smart PA Bridge Initialized");
+            if (typeof startAnnouncementsSync === 'function') startAnnouncementsSync();
+            // Scroll to top on refresh
+            window.scrollTo(0, 0);
+        });
     </script>
 </body>
 
