@@ -39,7 +39,7 @@
         .bg-watermark {
             position: fixed;
             inset: 0;
-            background-image: url('https://img5.pic.in.th/file/secure-sv1/ChatGPT-Image-Jan-21-2026-10_02_28-PM.png');
+            background-image: url('https://images.weserv.nl/?url=img5.pic.in.th/file/secure-sv1/ChatGPT-Image-Jan-21-2026-10_02_28-PM.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -252,6 +252,33 @@
             .no-print {
                 display: none !important;
             }
+
+            .print-only {
+                display: block !important;
+            }
+
+            /* Fix registration form layout for A4 */
+            #fullDetailContent {
+                background: white !important;
+                color: black !important;
+                transform: scale(0.95);
+                transform-origin: top center;
+            }
+
+            .fd-grid-fix {
+                display: grid !important;
+                grid-template-columns: 1fr 1.5fr !important;
+                gap: 20px !important;
+            }
+
+            .signature-area {
+                margin-top: 40px !important;
+                page-break-inside: avoid;
+            }
+        }
+
+        .print-only {
+            display: none;
         }
 
         /* LEFT SIDEBAR STYLES */
@@ -494,24 +521,72 @@
             background: #94a3b8;
         }
 
-        /* Mobile Modal Fullscreen */
-        @media (max-width: 640px) {
+        /* Print Optimizations */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
             .modal-container {
-                max-height: 100vh;
-                height: 100vh;
-                border-radius: 0 !important;
+                max-height: none !important;
+                height: auto !important;
+                box-shadow: none !important;
+                border: none !important;
+                position: relative !important;
+                width: 100% !important;
+                max-width: none !important;
             }
 
-            .modal-header,
-            .modal-body,
-            .modal-footer {
-                padding: 1.25rem;
+            .modal-body {
+                overflow: visible !important;
+                max-height: none !important;
+                height: auto !important;
+                padding: 0 !important;
             }
 
-            #scroll-to-top {
-                bottom: 2rem;
-                right: 1.5rem;
+            #reportModal {
+                position: absolute !important;
+                inset: 0 !important;
+                background: white !important;
+                display: block !important;
+                z-index: 9999 !important;
+                padding: 0 !important;
             }
+
+            .spa-view,
+            aside,
+            #mobile-menu-toggle,
+            #scroll-to-top,
+            .modal-header button {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .report-table,
+            .report-table th,
+            .report-table td {
+                border: 1px solid #000 !important;
+                color: black !important;
+            }
+
+            .report-table thead tr {
+                background-color: #f1f5f9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        .print-only {
+            display: none;
         }
     </style>
 </head>
@@ -542,7 +617,8 @@
         <div class="sidebar-header">
             <div class="flex items-center space-x-3 cursor-pointer"
                 onclick="showView('landing'); closeSidebarMobile();">
-                <img src="https://img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg" alt="Logo"
+                <img src="https://images.weserv.nl/?url=img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg"
+                    alt="Logo" crossorigin="anonymous"
                     class="h-12 w-12 object-contain bg-white rounded-xl shadow-md p-0.5">
                 <div>
                     <h1 class="font-bold text-lg text-white leading-tight">ระบบจัดชุดข้อมูลอัจฉริยะ ทม.อุทัยธานี</h1>
@@ -668,38 +744,65 @@
                             </button>
                         </div>
                     </div>
-                    <div class="flex-1 hidden md:flex justify-center">
-                        <div
-                            class="relative bg-white/70 backdrop-blur-md p-12 rounded-[4rem] shadow-2xl border border-blue-50 text-shadow-none">
-                            <div class="grid grid-cols-2 gap-8">
-                                <div class="text-center group relative">
-                                    <div class="absolute -top-1 -right-1 flex h-3 w-3" id="pulse-indicator">
-                                        <span
-                                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                                    </div>
-                                    <i
-                                        class="fas fa-satellite-dish text-4xl text-blue-600 mb-2 group-hover:scale-110 transition duration-500"></i>
-                                    <p class="text-3xl font-black text-slate-800" id="landing-count">0</p>
-                                    <p
-                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-shadow-none">
-                                        จุดติดตั้ง</p>
+                    <!-- NEW: DASHBOARD STATS FOR PUBLIC -->
+                    <div class="flex-1 w-full lg:w-auto">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-4 lg:gap-6 justify-center">
+                            <div
+                                class="stat-card p-6 border shadow-xl bg-white/80 backdrop-blur-xl rounded-[2.5rem] text-center hover:-translate-y-2 transition-all duration-500 border-blue-50">
+                                <div
+                                    class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-3 shadow-lg">
+                                    <i class="fas fa-volume-up text-xl"></i>
                                 </div>
-                                <div class="text-center group"><i
-                                        class="fas fa-check-circle text-4xl text-green-500 mb-2 group-hover:scale-110 transition duration-500"></i>
-                                    <p class="text-3xl font-black text-slate-800" id="landing-percent">0%</p>
-                                    <p
-                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-shadow-none">
-                                        ความพร้อม</p>
+                                <p class="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest">
+                                    ลำโพงทั้งหมด</p>
+                                <h3 class="text-3xl font-black text-slate-900" id="landing-total-speakers">0</h3>
+                            </div>
+                            <div
+                                class="stat-card p-6 border shadow-xl bg-white/80 backdrop-blur-xl rounded-[2.5rem] text-center hover:-translate-y-2 transition-all duration-500 border-green-50">
+                                <div
+                                    class="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-3 shadow-lg">
+                                    <i class="fas fa-check-circle text-xl"></i>
                                 </div>
-                                <div class="text-center group">
-                                    <i
-                                        class="fas fa-users text-4xl text-cyan-500 mb-2 group-hover:scale-110 transition duration-500"></i>
-                                    <p class="text-3xl font-black text-slate-800" id="landing-impact">18.5k</p>
-                                    <p
-                                        class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-shadow-none">
-                                        ประชากรที่ดูแล</p>
+                                <p class="text-[9px] font-black text-green-500 uppercase mb-1 tracking-widest">
+                                    พร้อมใช้งาน</p>
+                                <h3 class="text-3xl font-black text-green-600" id="landing-ok">0</h3>
+                            </div>
+                            <div
+                                class="stat-card p-6 border shadow-xl bg-white/80 backdrop-blur-xl rounded-[2.5rem] text-center hover:-translate-y-2 transition-all duration-500 border-orange-50">
+                                <div
+                                    class="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-3 shadow-lg">
+                                    <i class="fas fa-wrench text-xl"></i>
                                 </div>
+                                <p class="text-[9px] font-black text-orange-500 uppercase mb-1 tracking-widest">แจ้งซ่อม
+                                </p>
+                                <h3 class="text-3xl font-black text-orange-600" id="landing-repair">0</h3>
+                            </div>
+                            <div
+                                class="stat-card p-6 border shadow-xl bg-white/80 backdrop-blur-xl rounded-[2.5rem] text-center hover:-translate-y-2 transition-all duration-500 border-blue-50">
+                                <div
+                                    class="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white mx-auto mb-3 shadow-lg">
+                                    <i class="fas fa-tools text-xl"></i>
+                                </div>
+                                <p class="text-[9px] font-black text-blue-500 uppercase mb-1 tracking-widest">บำรุงรักษา
+                                </p>
+                                <h3 class="text-3xl font-black text-blue-600" id="landing-maint">0</h3>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
+                            <div
+                                class="bg-white/60 backdrop-blur px-5 py-3 rounded-2xl border border-blue-50 shadow-sm flex items-center gap-2 hover:bg-white transition-all">
+                                <i class="fas fa-map-marker-alt text-blue-600"></i>
+                                <span
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest">จุดติดตั้ง:</span>
+                                <span class="text-xs font-black text-slate-800" id="landing-total-points">0</span>
+                            </div>
+                            <div
+                                class="bg-white/60 backdrop-blur px-5 py-3 rounded-2xl border border-blue-50 shadow-sm flex items-center gap-2 hover:bg-white transition-all">
+                                <i class="fas fa-users text-cyan-600"></i>
+                                <span
+                                    class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ประชากรดูแล
+                                    (เขต):</span>
+                                <span class="text-xs font-black text-slate-800" id="landing-districts">0</span>
                             </div>
                         </div>
                     </div>
@@ -973,41 +1076,105 @@
                 </div>
 
                 <!-- Executive Summary & KPI -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                <!-- Executive Summary & KPI -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div onclick="applyDashFilter('all')"
-                        class="stat-card p-8 border shadow-sm text-center active-filter" id="filter-all">
-                        <p class="text-[11px] font-black text-slate-400 uppercase mb-2 tracking-widest">ทั้งหมด</p>
-                        <h3 class="text-5xl font-black text-slate-900" id="db-total">0</h3>
+                        class="stat-card p-10 border shadow-lg text-center active-filter bg-gradient-to-br from-white to-blue-50"
+                        id="filter-all">
+                        <div
+                            class="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white mx-auto mb-4 shadow-lg">
+                            <i class="fas fa-volume-up text-3xl"></i>
+                        </div>
+                        <p class="text-[12px] font-black text-slate-400 uppercase mb-2 tracking-widest">ลำโพงทั้งหมด
+                            (🔊)</p>
+                        <h3 class="text-6xl font-black text-slate-900" id="db-total-speakers">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Operational')" class="stat-card p-8 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Operational')"
+                        class="stat-card p-10 border shadow-lg text-center bg-gradient-to-br from-white to-green-50"
                         id="filter-Operational">
-                        <p class="text-[11px] font-black text-green-500 uppercase mb-2 tracking-widest"><i
-                                class="fas fa-check-circle mr-1"></i>พร้อมใช้</p>
-                        <h3 class="text-5xl font-black text-green-600" id="db-ok">0</h3>
+                        <div
+                            class="w-16 h-16 bg-green-500 rounded-3xl flex items-center justify-center text-white mx-auto mb-4 shadow-lg">
+                            <i class="fas fa-check-circle text-3xl"></i>
+                        </div>
+                        <p class="text-[12px] font-black text-green-500 uppercase mb-2 tracking-widest">พร้อมใช้งาน (🟢)
+                        </p>
+                        <h3 class="text-6xl font-black text-green-600" id="db-ok">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Under Repair')" class="stat-card p-8 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Under Repair')"
+                        class="stat-card p-10 border shadow-lg text-center bg-gradient-to-br from-white to-orange-50"
                         id="filter-UnderRepair">
-                        <p class="text-[11px] font-black text-orange-500 uppercase mb-2 tracking-widest"><i
-                                class="fas fa-wrench mr-1"></i>แจ้งซ่อม</p>
-                        <h3 class="text-5xl font-black text-orange-600" id="db-repair">0</h3>
+                        <div
+                            class="w-16 h-16 bg-orange-500 rounded-3xl flex items-center justify-center text-white mx-auto mb-4 shadow-lg">
+                            <i class="fas fa-wrench text-3xl"></i>
+                        </div>
+                        <p class="text-[12px] font-black text-orange-500 uppercase mb-2 tracking-widest">แจ้งซ่อม (🔴)
+                        </p>
+                        <h3 class="text-6xl font-black text-orange-600" id="db-repair">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Maintenance')" class="stat-card p-8 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Maintenance')"
+                        class="stat-card p-10 border shadow-lg text-center bg-gradient-to-br from-white to-blue-50"
                         id="filter-Maintenance">
-                        <p class="text-[11px] font-black text-blue-500 uppercase mb-2 tracking-widest"><i
-                                class="fas fa-tools mr-1"></i>บำรุงรักษา</p>
-                        <h3 class="text-5xl font-black text-blue-600" id="db-maint">0</h3>
+                        <div
+                            class="w-16 h-16 bg-blue-500 rounded-3xl flex items-center justify-center text-white mx-auto mb-4 shadow-lg">
+                            <i class="fas fa-tools text-3xl"></i>
+                        </div>
+                        <p class="text-[12px] font-black text-blue-500 uppercase mb-2 tracking-widest">บำรุงรักษา (🟡)
+                        </p>
+                        <h3 class="text-6xl font-black text-blue-600" id="db-maint">0</h3>
                     </div>
-                    <div onclick="applyDashFilter('Inactive')" class="stat-card p-8 border shadow-sm text-center"
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="stat-card p-8 border shadow-md text-center bg-white/50">
+                        <div class="flex items-center justify-center gap-4">
+                            <div
+                                class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 shadow-sm">
+                                <i class="fas fa-map-marker-alt text-xl"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">จุดติดตั้ง
+                                    (📍)</p>
+                                <h3 class="text-3xl font-black text-slate-800" id="db-total-points">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card p-8 border shadow-md text-center bg-white/50">
+                        <div class="flex items-center justify-center gap-4">
+                            <div
+                                class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-600 shadow-sm">
+                                <i class="fas fa-users text-xl"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ชุมชน/เขต
+                                    (🏘️)</p>
+                                <h3 class="text-3xl font-black text-slate-800" id="db-districts">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div onclick="applyDashFilter('Inactive')"
+                        class="stat-card p-8 border shadow-md text-center flex items-center justify-center gap-4"
                         id="filter-Inactive">
-                        <p class="text-[11px] font-black text-slate-400 uppercase mb-2 tracking-widest"><i
-                                class="fas fa-power-off mr-1"></i>ปิดใช้งาน</p>
-                        <h3 class="text-5xl font-black text-slate-500" id="db-inactive">0</h3>
+                        <div
+                            class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-500 shadow-sm">
+                            <i class="fas fa-power-off text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ปิดใช้งาน</p>
+                            <h3 class="text-3xl font-black text-slate-500" id="db-inactive">0</h3>
+                        </div>
                     </div>
-                    <div onclick="applyDashFilter('Pending')" class="stat-card p-8 border shadow-sm text-center"
+                    <div onclick="applyDashFilter('Pending')"
+                        class="stat-card p-8 border shadow-md text-center flex items-center justify-center gap-4"
                         id="filter-Pending">
-                        <p class="text-[11px] font-black text-yellow-500 uppercase mb-2 tracking-widest"><i
-                                class="fas fa-hourglass-half mr-1"></i>รอติดตั้ง</p>
-                        <h3 class="text-5xl font-black text-yellow-600" id="db-pending">0</h3>
+                        <div
+                            class="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-sm">
+                            <i class="fas fa-hourglass-half text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-[10px] font-black text-yellow-500 uppercase tracking-widest">
+                                รอติดตั้ง/ตรวจสอบ</p>
+                            <h3 class="text-3xl font-black text-yellow-600" id="db-pending">0</h3>
+                        </div>
                     </div>
                 </div>
 
@@ -1034,11 +1201,11 @@
                     <!-- Recent Maintenance History -->
                     <div
                         class="bg-white/90 backdrop-blur p-10 rounded-[3.5rem] shadow-lg border border-slate-100 hover:shadow-2xl transition-all duration-300">
-                        <h4 class="text-2xl font-black text-slate-800 mb-8 flex items-center">
-                            <i class="fas fa-tools mr-3 text-orange-500 text-3xl"></i> ประวัติซ่อมบำรุงล่าสุด
-                            <span
-                                class="ml-auto text-xs bg-orange-100 text-orange-600 px-4 py-2 rounded-full font-bold">5
-                                รายการล่าสุด</span>
+                        <h4 class="text-2xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                            <i class="fas fa-tools text-orange-500 text-3xl"></i> ประวัติซ่อมบำรุง
+                            <button onclick="window.openAllMaintenanceModal()"
+                                class="admin-only-ui hidden ml-auto text-xs bg-slate-100 text-slate-600 px-4 py-2 rounded-full font-bold hover:bg-orange-500 hover:text-white transition">ดูทั้งหมด
+                                <i class="fas fa-chevron-right ml-1"></i></button>
                         </h4>
                         <div id="recentMaintenanceList" class="space-y-4">
                             <div class="text-center py-12 text-slate-300">
@@ -1404,6 +1571,28 @@
                         <i class="fas fa-ticket text-6xl mb-4"></i>
                         <p class="text-lg font-bold">ยังไม่มีรายการแจ้งซ่อม</p>
                         <p class="text-sm">รายการจะแสดงเมื่อมีผู้แจ้งปัญหาผ่าน QR Code</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. ANNOUNCEMENTS ADMINISTRATION (Admin) -->
+        <section id="view-announcements-admin" class="spa-view p-6 md:p-12 admin-only-ui hidden">
+            <div class="max-w-6xl mx-auto space-y-10">
+                <div
+                    class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-slate-200/50 pb-8">
+                    <div class="bg-white/60 backdrop-blur-sm p-6 rounded-[2.5rem] border border-white/50 shadow-sm">
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tight">จัดการประชาสัมพันธ์</h2>
+                        <p class="text-slate-500 font-medium">อนุมัติหรือลบรายการที่ประชาชนฝากประชาสัมพันธ์เข้าระบบ
+                            Ticker</p>
+                    </div>
+                </div>
+
+                <div id="adminAnnouncementsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div
+                        class="col-span-full text-center py-24 bg-white/40 backdrop-blur rounded-[3rem] border border-dashed border-slate-200">
+                        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">กำลังโหลดรายการ...</p>
                     </div>
                 </div>
             </div>
@@ -1780,9 +1969,13 @@
                         class="bg-purple-600/10 text-purple-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-purple-600 hover:text-white transition-all flex items-center gap-2">
                         <i class="fas fa-qrcode"></i> พิมพ์ QR แจ้งซ่อม
                     </button>
-                    <button onclick="window.triggerPrint()"
+                    <button onclick="window.triggerPrint()" id="fd-print-btn"
                         class="bg-blue-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-xl hover:bg-blue-700 hover:scale-105 transition-all flex items-center gap-2">
-                        <i class="fas fa-print"></i> สั่งพิมพ์ทะเบียน (Print)
+                        <i class="fas fa-print"></i> พิมพ์ใบทะเบียน (A4 PDF)
+                    </button>
+                    <button onclick="window.saveSnapshot()" id="fd-snapshot-btn"
+                        class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-xl hover:bg-emerald-700 hover:scale-105 transition-all flex items-center gap-2">
+                        <i class="fas fa-camera"></i> บันทึกภาพ (Snapshot)
                     </button>
                     <div class="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
                     <button onclick="document.getElementById('fullDetailModal').classList.add('hidden')"
@@ -1795,8 +1988,8 @@
             <!-- Printable Template -->
             <div class="text-center mb-12 border-b-[3px] border-blue-900 pb-10">
                 <div class="flex items-center justify-center gap-6 mb-6">
-                    <img src="https://img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg"
-                        class="h-28 w-28 object-contain rounded-2xl shadow-lg">
+                    <img src="https://images.weserv.nl/?url=img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg"
+                        crossorigin="anonymous" class="h-28 w-28 object-contain rounded-2xl shadow-lg">
                     <div class="text-left">
                         <h1 class="text-4xl font-black text-slate-900 leading-tight">แบบทะเบียนประวัติจุดติดตั้ง</h1>
                         <p class="text-xl font-bold text-blue-800">เทศบาลเมืองอุทัยธานี <span
@@ -1887,23 +2080,33 @@
             </div>
 
             <!-- Signature Section (Official/Government Style) -->
-            <div class="mt-20 pt-16 border-t-[1px] border-slate-200">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
-                    <div class="text-center space-y-8">
-                        <div class="space-y-2">
+            <div class="mt-20 pt-16 border-t-[1px] border-slate-200 signature-area">
+                <div class="grid grid-cols-2 gap-16">
+                    <div class="text-center space-y-12">
+                        <div class="space-y-4">
                             <p class="text-slate-800 font-bold">
                                 (ลงชื่อ)...........................................................................</p>
-                            <p class="text-sm text-slate-500 font-medium">เจ้าหน้าที่ผู้บันทึกข้อมูล/ผู้รายงาน</p>
+                            <div class="flex flex-col items-center">
+                                <span class="text-sm text-slate-500 font-medium">(
+                                    ............................................................ )</span>
+                                <span
+                                    class="text-xs text-slate-400 mt-1 uppercase tracking-widest">เจ้าหน้าที่ผู้บันทึกข้อมูล/ผู้รายงาน</span>
+                            </div>
                         </div>
                         <div class="pt-4">
                             <p class="text-slate-800 font-bold">วันที่ .......... / .......... / ..........</p>
                         </div>
                     </div>
-                    <div class="text-center space-y-8">
-                        <div class="space-y-2">
+                    <div class="text-center space-y-12">
+                        <div class="space-y-4">
                             <p class="text-slate-800 font-bold">
                                 (ลงชื่อ)...........................................................................</p>
-                            <p class="text-sm text-slate-500 font-medium">หัวหน้าหน่วยงาน/ผู้อนุมัติตรวจสอบ</p>
+                            <div class="flex flex-col items-center">
+                                <span class="text-sm text-slate-500 font-medium">(
+                                    ............................................................ )</span>
+                                <span
+                                    class="text-xs text-slate-400 mt-1 uppercase tracking-widest">หัวหน้าหน่วยงาน/ผู้อนุมัติตรวจสอบ</span>
+                            </div>
                         </div>
                         <div class="pt-4">
                             <p class="text-slate-800 font-bold">วันที่ .......... / .......... / ..........</p>
@@ -2388,11 +2591,22 @@
             </div>
             <div class="space-y-5">
                 <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">เลือกจุดติดตั้ง</label>
-                    <select id="maint-point"
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                        <option value="">เลือกจุด...</option>
-                    </select>
+                    <div class="flex justify-between items-center mb-1.5 ml-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">เลือกจุดติดตั้ง
+                            (Select Points)</label>
+                        <button onclick="toggleAllMaintPoints()"
+                            class="text-[10px] text-purple-600 font-black uppercase hover:underline">Select All</button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="maint-point-search" placeholder="ค้นหาจุดหรือพิกัด..."
+                            onkeyup="filterMaintPoints()"
+                            class="w-full bg-slate-100 border-none px-5 py-3 rounded-t-2xl outline-none text-xs font-bold focus:ring-2 focus:ring-purple-500">
+                        <div id="maint-point-list"
+                            class="w-full bg-slate-50 max-h-40 overflow-y-auto rounded-b-2xl border-t border-slate-200 custom-scroll p-2">
+                            <!-- Checkboxes will be injected here -->
+                            <div class="p-4 text-center text-slate-400 text-xs">กำลังโหลดจุด...</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="space-y-1">
                     <label class="text-[10px] font-black text-slate-400 uppercase ml-2">วันที่กำหนดการ</label>
@@ -2429,6 +2643,47 @@
 
 
 
+
+    <!-- All Maintenance History Modal -->
+    <div id="allMaintenanceModal"
+        class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print">
+        <div class="modal-container w-full max-w-5xl rounded-[3rem] shadow-2xl animate-slideUp">
+            <div class="modal-header">
+                <div>
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tight">ประวัติการบำรุงรักษาทั้งหมด</h3>
+                    <p class="text-[10px] text-slate-400 font-bold mt-1">Admin History Management</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <input type="text" id="all-maint-search" placeholder="ค้นหาประวัติ..."
+                        onkeyup="renderAllMaintenanceTable()"
+                        class="bg-slate-50 border-none px-4 py-2 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-orange-500 w-48 sm:w-64">
+                    <button onclick="document.getElementById('allMaintenanceModal').classList.add('hidden')"
+                        class="text-slate-400 hover:text-slate-600 transition p-2">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body custom-scroll bg-slate-100/50">
+                <div class="overflow-x-auto rounded-3xl border border-slate-100 shadow-sm bg-white">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white text-[10px] uppercase tracking-widest">
+                                <th class="p-5 font-black">วันที่</th>
+                                <th class="p-5 font-black">จุดติดตั้ง</th>
+                                <th class="p-5 font-black">รายการดำเนินงาน</th>
+                                <th class="p-5 font-black">ช่างผู้คุมงาน</th>
+                                <th class="p-5 font-black text-center">สถานะ</th>
+                                <th class="p-5 font-black text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-maint-table-body" class="divide-y divide-slate-100 text-sm">
+                            <!-- Rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Global Scroll to Top Button -->
     <div id="scroll-to-top" onclick="window.scrollToTop()">
@@ -2483,6 +2738,19 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const appId = 'uthai-smart-pa';
+
+        // Expose Firebase tools to global scope for other scripts
+        window.db = db;
+        window.auth = auth;
+        window.appId = appId;
+        window.collection = collection;
+        window.onSnapshot = onSnapshot;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.deleteDoc = deleteDoc;
+        window.updateDoc = updateDoc;
+        window.addDoc = addDoc;
+        window.signInAnonymously = signInAnonymously;
 
         // --- 2. AUTHENTICATION & SYNC ---
         async function initAuth() {
@@ -2550,9 +2818,12 @@
                     users.push({ id: doc.id, ...doc.data() });
                 });
                 if (users.length === 0) {
-                    const admin = { username: 'admin', name: 'หัวหน้าเทคโนโลยีสารสนเทศ', role: 'Admin', password: 'admin123' };
-                    addDoc(usersRef, admin);
-                    users.push(admin);
+                    const defaults = [
+                        { username: 'admin', name: 'หัวหน้าเทคโนโลยีสารสนเทศ', role: 'Admin', password: 'admin123' },
+                        { username: 'pongsak', name: 'คุณพงศกร (Admin)', role: 'Admin', password: 'password123' }
+                    ];
+                    defaults.forEach(u => addDoc(usersRef, u));
+                    users.push(...defaults);
                 }
                 window.appUsers = users;
             }, (error) => console.error("User Sync Error:", error));
@@ -2801,6 +3072,7 @@
             if (sidebarBtn) sidebarBtn.classList.add('active');
             if (viewId === 'users') renderUsers();
             if (viewId === 'tickets') window.renderTickets();
+            if (viewId === 'announcements-admin') window.renderAnnouncementsAdmin();
             if (viewId === 'public-report') window.populatePointSelector();
             if (viewId === 'developer') document.getElementById('codeBlock').innerText = GAS_CODE_CONTENT;
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2885,20 +3157,33 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             const data = window.speakerPoints;
             const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
 
-            // Filter logic for charts
-            const filtered = data.filter(p => {
-                return currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter;
-            });
+            const totalPoints = data.length;
+            const totalSpeakers = data.reduce((acc, p) => acc + (parseInt(p.Speakers_amount) || 2), 0);
+            const districts = new Set(data.map(p => p.OLT).filter(v => v)).size || 1;
 
-            setVal('db-total', data.length); // Keep total global
+            setVal('db-total-speakers', totalSpeakers.toLocaleString());
+            setVal('db-total-points', totalPoints.toLocaleString());
+            setVal('db-districts', districts);
+
+            setVal('landing-total-speakers', totalSpeakers.toLocaleString());
+
             setVal('db-ok', data.filter(p => (p.Status || '').toLowerCase() === 'operational').length);
             setVal('db-repair', data.filter(p => (p.Status || '').toLowerCase() === 'under repair').length);
             setVal('db-maint', data.filter(p => (p.Status || '').toLowerCase() === 'maintenance').length);
             setVal('db-inactive', data.filter(p => (p.Status || '').toLowerCase() === 'inactive').length);
             setVal('db-pending', data.filter(p => (p.Status || '').toLowerCase() === 'pending').length);
-            setVal('db-old', data.filter(p => p.InstallType === 'Old').length);
-            setVal('db-new', data.filter(p => p.InstallType === 'New').length);
-            setVal('db-moved', data.filter(p => p.InstallType === 'Moved').length);
+
+            setVal('landing-ok', data.filter(p => (p.Status || '').toLowerCase() === 'operational').length);
+            setVal('landing-repair', data.filter(p => (p.Status || '').toLowerCase() === 'under repair').length);
+            setVal('landing-maint', data.filter(p => (p.Status || '').toLowerCase() === 'maintenance').length);
+
+            setVal('landing-total-points', totalPoints.toLocaleString());
+            setVal('landing-districts', districts);
+
+            // Filter logic for charts
+            const filtered = data.filter(p => {
+                return currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter;
+            });
 
             initInsightCharts(filtered);
         };
@@ -3111,7 +3396,8 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
         window.clearMapFilters = function () {
             document.getElementById('map-filter-status').value = 'all';
-            // document.getElementById('map-filter-zone').value = 'all'; // REMOVED
+            document.getElementById('map-filter-type').value = 'all';
+            document.getElementById('map-filter-watt').value = 'all';
             applyMapFilter();
             Swal.fire({
                 icon: 'info',
@@ -3250,7 +3536,47 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                 emptyState.classList.remove('hidden');
             }
 
+            // Hide print/snapshot buttons for non-admins
+            const printBtn = document.getElementById('fd-print-btn');
+            const snapBtn = document.getElementById('fd-snapshot-btn');
+            const isStaff = currentUser && (currentUser.role === 'Admin' || currentUser.role === 'Officer');
+
+            if (printBtn) printBtn.classList.toggle('hidden', !isStaff);
+            if (snapBtn) snapBtn.classList.toggle('hidden', !isStaff);
+
             document.getElementById('fullDetailModal').classList.remove('hidden');
+        };
+
+        window.saveSnapshot = function () {
+            const element = document.getElementById('fullDetailContent');
+            const pointNum = document.getElementById('fd-number').innerText;
+
+            // Hide header buttons temporarily for snapshot
+            const header = element.querySelector('.no-print');
+            header.style.display = 'none';
+
+            Swal.fire({
+                title: 'กำลังสร้างภาพ Snapshot...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            html2canvas(element, {
+                scale: 2, // High quality
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                header.style.display = 'flex'; // Restore header
+                const link = document.createElement('a');
+                link.download = `Registry_Point_${pointNum}_Snapshot.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                Swal.fire({ icon: 'success', title: 'บันทึกภาพสำเร็จ!', timer: 1500, showConfirmButton: false });
+            }).catch(err => {
+                header.style.display = 'flex';
+                Swal.fire({ icon: 'error', title: 'บันทึกภาพล้มเหลว', text: err.message });
+            });
         };
 
         // --- PRINT TRIGGER ---
@@ -3354,7 +3680,19 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
         // --- Report Modal Logic ---
         window.openReportModal = function () {
             if (!window.speakerPoints) return;
-            const data = [...window.speakerPoints].sort((a, b) => (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0));
+
+            // Apply current filters to the report data
+            const q = (document.getElementById('searchInput')?.value || "").toLowerCase();
+            const fType = document.getElementById('filterType')?.value;
+            const fStatus = document.getElementById('filterStatus')?.value;
+
+            const data = window.speakerPoints.filter(p => {
+                const dashMatch = currentDashFilter === 'all' || p.Status === currentDashFilter || p.InstallType === currentDashFilter;
+                const matchQuery = (p.Position || "").toLowerCase().includes(q) || String(p.Number).includes(q);
+                const matchType = fType ? p.InstallType == fType : true;
+                const matchStatus = fStatus ? p.Status == fStatus : true;
+                return dashMatch && matchQuery && matchType && matchStatus;
+            }).sort((a, b) => (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0));
 
             // Safety Check for Elements
             const dateEl = document.getElementById('report-date');
@@ -3373,9 +3711,52 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
             const tableContainer = document.getElementById('report-table-container');
             if (tableContainer) {
-                tableContainer.innerHTML = `<table class="w-full text-left border-collapse report-card text-shadow-none"><thead><tr class="bg-slate-900 text-white text-[9px] uppercase tracking-widest"><th class="p-4">NO.</th><th class="p-4">POSITION</th><th class="p-4 text-center text-shadow-none">STATUS</th></tr></thead><tbody class="divide-y divide-slate-100 text-shadow-none">
-            ${data.map(p => `<tr class="text-[11px] font-medium text-shadow-none text-shadow-none"><td class="p-4 font-black">#${p.Number}</td><td class="p-4">${p.Position}</td><td class="p-4 text-center font-bold ${p.Status === 'Operational' ? 'text-green-600' : 'text-orange-500'} uppercase">${p.Status}</td></tr>`).join('')}
-        </tbody></table>`;
+                let tableHtml = `<table class="w-full text-left border-collapse report-table text-shadow-none">
+                    <thead>
+                        <tr class="bg-slate-900 text-white text-[10px] uppercase tracking-widest print:bg-slate-100 print:text-slate-900">
+                            <th class="p-4 border">NO.</th>
+                            <th class="p-4 border">LOCATION / POSITION</th>
+                            <th class="p-4 border">TYPE</th>
+                            <th class="p-4 border text-center">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-shadow-none">
+                        ${data.map(p => `
+                            <tr class="text-[11px] font-medium text-shadow-none hover:bg-slate-50">
+                                <td class="p-4 border font-black bg-slate-50/50">#${p.Number}</td>
+                                <td class="p-4 border">${p.Position}</td>
+                                <td class="p-4 border text-[9px] font-bold text-slate-500 uppercase">${translateInstallType(p.InstallType)}</td>
+                                <td class="p-4 border text-center font-bold ${p.Status === 'Operational' ? 'text-green-600' : 'text-orange-500'} uppercase">
+                                    ${translateStatus(p.Status)}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+
+                // Add Signature Section
+                tableHtml += `
+                    <div class="mt-16 grid grid-cols-2 gap-12 print-only">
+                        <div class="text-center space-y-8">
+                            <div class="h-10 border-b border-dotted border-slate-400 w-64 mx-auto"></div>
+                            <div>
+                                <p class="text-xs font-bold font-sans tracking-wide">ลงชื่อ ........................................................... ผู้รายงาน</p>
+                                <p class="text-[10px] text-slate-500 mt-2">( ........................................................... )</p>
+                                <p class="text-[9px] text-slate-400 mt-1 uppercase font-black tracking-widest">Technician / Reporter</p>
+                            </div>
+                        </div>
+                        <div class="text-center space-y-8">
+                            <div class="h-10 border-b border-dotted border-slate-400 w-64 mx-auto"></div>
+                            <div>
+                                <p class="text-xs font-bold font-sans tracking-wide">ลงชื่อ ........................................................... ผู้อนุมัติ</p>
+                                <p class="text-[10px] text-slate-500 mt-2">( ........................................................... )</p>
+                                <p class="text-[9px] text-slate-400 mt-1 uppercase font-black tracking-widest">Authorized Officer</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                tableContainer.innerHTML = tableHtml;
             }
 
             const modal = document.getElementById('reportModal');
@@ -3387,13 +3768,24 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
         };
 
         // --- Maintenance Schedule Modal Logic ---
+        // --- Maintenance Schedule Modal Logic ---
         window.openMaintenanceScheduleModal = function () {
-            // Populate point dropdown
-            const pointSelect = document.getElementById('maint-point');
-            if (pointSelect && window.speakerPoints) {
+            // Populate point list with checkboxes
+            const pointList = document.getElementById('maint-point-list');
+            if (pointList && window.speakerPoints) {
                 const sortedPoints = [...window.speakerPoints].sort((a, b) => (parseInt(a.Number) || 0) - (parseInt(b.Number) || 0));
-                pointSelect.innerHTML = '<option value="">เลือกจุด...</option>' +
-                    sortedPoints.map(p => `<option value="${p.id}">#${p.Number} - ${p.Position}</option>`).join('');
+                pointList.innerHTML = sortedPoints.map(p => `
+                    <label class="maint-item flex items-center gap-3 p-3 hover:bg-slate-100 rounded-xl cursor-pointer transition" data-search="${p.Number} ${p.Position} ${p.OLT}">
+                        <input type="checkbox" name="maint-point-check" value="${p.id}" class="w-5 h-5 rounded border-slate-300 text-purple-600 focus:ring-purple-500">
+                        <div class="flex-1">
+                            <div class="flex justify-between">
+                                <span class="font-bold text-slate-800 text-sm">#${p.Number}</span>
+                                <span class="text-[10px] font-black text-slate-400 uppercase">${p.OLT || '-'}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 truncate font-medium">${p.Position}</p>
+                        </div>
+                    </label>
+                `).join('');
             }
 
             // Set default date to tomorrow
@@ -3408,26 +3800,48 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             if (modal) modal.classList.remove('hidden');
         };
 
+        window.filterMaintPoints = function () {
+            const query = document.getElementById('maint-point-search').value.toLowerCase();
+            const items = document.querySelectorAll('.maint-item');
+            items.forEach(item => {
+                const text = item.getAttribute('data-search').toLowerCase();
+                if (text.includes(query)) item.classList.remove('hidden');
+                else item.classList.add('hidden');
+            });
+        };
+
+        window.toggleAllMaintPoints = function () {
+            const checkboxes = document.querySelectorAll('input[name="maint-point-check"]');
+            const allChecked = Array.from(checkboxes).every(c => c.checked);
+            checkboxes.forEach(c => {
+                const parent = c.closest('.maint-item');
+                if (!parent.classList.contains('hidden')) {
+                    c.checked = !allChecked;
+                }
+            });
+        };
+
         window.closeMaintenanceScheduleModal = function () {
             const modal = document.getElementById('maintenanceScheduleModal');
             if (modal) modal.classList.add('hidden');
-            // Reset form
-            document.getElementById('maint-point').value = '';
-            document.getElementById('maint-type').value = 'routine';
-            document.getElementById('maint-notes').value = '';
+            // Reset search and checks
+            const search = document.getElementById('maint-point-search');
+            if (search) search.value = '';
+            window.filterMaintPoints();
         };
 
         window.saveMaintenanceSchedule = function () {
-            const pointId = document.getElementById('maint-point').value;
+            const checkboxes = document.querySelectorAll('input[name="maint-point-check"]:checked');
+            const pointIds = Array.from(checkboxes).map(c => c.value);
             const date = document.getElementById('maint-date').value;
             const type = document.getElementById('maint-type').value;
             const notes = document.getElementById('maint-notes').value;
 
-            if (!pointId || !date) {
+            if (pointIds.length === 0 || !date) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'ข้อมูลไม่ครบ',
-                    text: 'กรุณาเลือกจุดติดตั้งและวันที่',
+                    text: 'กรุณาเลือกจุดติดตั้งอย่างน้อย 1 จุด และวันที่',
                     confirmButtonColor: '#7c3aed'
                 });
                 return;
@@ -3443,14 +3857,48 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             // Close modal and show success
             window.closeMaintenanceScheduleModal();
             Swal.fire({
-                icon: 'success',
-                title: 'บันทึกกำหนดการสำเร็จ!',
-                html: `<div class="text-left">
-                    <p><strong>วันที่:</strong> ${new Date(date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                    <p><strong>ประเภท:</strong> ${typeLabels[type]}</p>
-                    ${notes ? `<p><strong>หมายเหตุ:</strong> ${notes}</p>` : ''}
-                </div>`,
-                confirmButtonColor: '#7c3aed'
+                title: 'กำลังบันทึกกำหนดการ...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            // Perform bulk updates in Firestore
+            const batchPromises = pointIds.map(async (pointId) => {
+                const point = window.speakerPoints.find(p => p.id === pointId);
+                if (point) {
+                    const newMaintenance = [...(point.Maintenance || [])];
+                    newMaintenance.push({
+                        date: date,
+                        title: `กำหนดการ: ${typeLabels[type]}`,
+                        desc: notes || 'กำหนดการอัตโนมัติจากระบบ',
+                        status: 'Scheduled',
+                        type: type,
+                        id: 'm-' + Date.now() + Math.random().toString(36).substr(2, 5)
+                    });
+
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'speaker_points');
+                    return setDoc(doc(colRef, pointId), {
+                        Maintenance: newMaintenance,
+                        Status: 'Maintenance'
+                    }, { merge: true });
+                }
+            });
+
+            Promise.all(batchPromises).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกกำหนดการสำเร็จ!',
+                    html: `<div class="text-left text-sm">
+                        <p><strong>จำนวน:</strong> ${pointIds.length} จุด</p>
+                        <p><strong>วันที่:</strong> ${new Date(date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                        <p><strong>ประเภท:</strong> ${typeLabels[type]}</p>
+                        ${notes ? `<p><strong>หมายเหตุ:</strong> ${notes}</p>` : ''}
+                    </div>`,
+                    confirmButtonColor: '#7c3aed'
+                });
+            }).catch(error => {
+                console.error("Bulk Maintenance Error:", error);
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถบันทึกกำหนดการได้บางส่วน' });
             });
         };
 
@@ -4086,24 +4534,70 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                 const point = (window.speakerPoints || []).find(p => p.id === t.pointId);
                 const config = statusConfig[t.status] || statusConfig['pending'];
                 const dateStr = new Date(t.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                return `<div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        ${t.photo ? `<img src="${t.photo}" class="w-16 h-16 rounded-xl object-cover">` : `<div class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center text-slate-300"><i class="fas fa-image text-2xl"></i></div>`}
-                        <div>
-                            <p class="font-black text-slate-800">#${point?.Number || '-'} - ${point?.Position || 'ไม่ระบุ'}</p>
-                            <p class="text-sm text-slate-500"><i class="fas fa-exclamation-triangle mr-1 text-orange-400"></i>${t.problemTypeLabel}</p>
-                            <p class="text-xs text-slate-400 mt-1"><i class="far fa-clock mr-1"></i>${dateStr}</p>
+                const officer = (window.appUsers || []).find(u => u.id === t.assignedTo);
+                return `<div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col gap-4 group">
+                    <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            ${t.photo ? `<img src="${t.photo}" class="w-16 h-16 rounded-xl object-cover">` : `<div class="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center text-slate-300"><i class="fas fa-image text-2xl"></i></div>`}
+                            <div>
+                                <p class="font-black text-slate-800">#${point?.Number || '-'} - ${point?.Position || 'ไม่ระบุ'}</p>
+                                <p class="text-sm text-slate-500"><i class="fas fa-exclamation-triangle mr-1 text-orange-400"></i>${t.problemTypeLabel}</p>
+                                <p class="text-xs text-slate-400 mt-1"><i class="far fa-clock mr-1"></i>${dateStr}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 ${config.bg} ${config.text} rounded-full text-xs font-bold">
+                                <i class="fas ${config.icon}"></i> ${config.label}
+                            </span>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 ${config.bg} ${config.text} rounded-full text-xs font-bold">
-                            <i class="fas ${config.icon}"></i> ${config.label}
-                        </span>
-                        ${t.status === 'pending' ? `<button onclick="window.openAssignTicketModal('${t.id}')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition"><i class="fas fa-user-plus mr-1"></i>มอบหมาย</button>` : ''}
-                        ${t.status === 'assigned' || t.status === 'in_progress' ? `<button onclick="window.openCompleteTicketModal('${t.id}')" class="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-700 transition"><i class="fas fa-check mr-1"></i>เสร็จสิ้น</button>` : ''}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                        <div class="space-y-2">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ข้อมูลผู้แจ้ง (Reporter)</p>
+                            <p class="text-xs font-bold text-slate-700">${t.reporterName} ${t.reporterPhone ? `(${t.reporterPhone})` : ''}</p>
+                            <p class="text-xs text-slate-500 italic">${t.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
+                        </div>
+                        ${t.assignedTo ? `
+                        <div class="space-y-2 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+                            <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest">การมอบหมาย (Assignment)</p>
+                            <p class="text-xs font-bold text-blue-800"><i class="fas fa-user-circle mr-1"></i> ${officer ? officer.name : 'Unknown Officer'}</p>
+                            <p class="text-xs text-blue-600 font-medium">${t.assignmentNotes || 'รอระบุภารกิจ...'}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="flex justify-end gap-2 mt-2">
+                        ${t.status === 'pending' ? `<button onclick="window.openAssignTicketModal('${t.id}')" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/20"><i class="fas fa-user-plus mr-1"></i>มอบหมาย</button>` : ''}
+                        ${t.status === 'assigned' || t.status === 'in_progress' ? `<button onclick="window.openCompleteTicketModal('${t.id}')" class="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-700 transition shadow-lg shadow-green-500/20"><i class="fas fa-check mr-1"></i>เสร็จสิ้น</button>` : ''}
+                        ${t.status === 'assigned' ? `<button onclick="window.openAssignTicketModal('${t.id}')" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 transition" title="แก้ไขการมอบหมาย"><i class="fas fa-edit"></i></button>` : ''}
+                        <button onclick="window.deleteTicket('${t.id}')" class="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
                 </div>`;
             }).join('');
+        };
+
+        window.deleteTicket = async function (id) {
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบรายการ?',
+                text: "ข้อมูลการแจ้งซ่อมนี้จะหายไปจากฐานข้อมูล",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'ลบข้อมูล'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
+                    await deleteDoc(doc(reportsRef, id));
+                    Swal.fire({ icon: 'success', title: 'ลบรายการแล้ว', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'ลบไม่ได้', text: e.message });
+                }
+            }
         };
 
         window.printQRCodeCard = function (pointId, pointNumber, location) {
@@ -4138,7 +4632,9 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                             <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
                         </div>
                         <div class="card">
-                            <img src="https://img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg" class="logo">
+                            <img src="https://images.weserv.nl/?url=img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg" 
+                                crossorigin="anonymous"
+                                class="logo">
                             <h1>เทศบาลเมืองอุทัยธานี</h1>
                             <h2>Smart Public Address System</h2>
                             <div class="qr-container" id="qrcode"></div>
@@ -4165,19 +4661,42 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
         window.openAssignTicketModal = async function (ticketId) {
             const officers = (window.appUsers || []).filter(u => u.role === 'Officer' || u.role === 'Admin');
             const options = officers.map(o => `<option value="${o.id}">${o.name} (${o.role})</option>`).join('');
-            const { value: assignedTo } = await Swal.fire({
-                title: 'มอบหมายงาน',
-                html: `<select id="swal-assign-select" class="swal2-input">${options}</select>`,
+
+            const { value: formValues } = await Swal.fire({
+                title: 'มอบหมายงานและรายละเอียด',
+                html: `
+                    <div class="text-left space-y-4">
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ผู้รับผิดชอบ (Assignee)</label>
+                            <select id="swal-assign-select" class="swal2-input !mt-1 !w-full">${options}</select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ภารกิจที่รับผิดชอบ (Work Responsibility)</label>
+                            <textarea id="swal-assign-notes" class="swal2-textarea !mt-1 !w-full" placeholder="ระบุรายละเอียดงานที่ต้องทำ..."></textarea>
+                        </div>
+                    </div>
+                `,
                 focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonText: 'มอบหมาย',
+                confirmButtonText: 'บันทึกการมอบหมาย',
                 cancelButtonText: 'ยกเลิก',
                 confirmButtonColor: '#1e40af',
-                preConfirm: () => document.getElementById('swal-assign-select').value
+                preConfirm: () => {
+                    return {
+                        assignedTo: document.getElementById('swal-assign-select').value,
+                        assignmentNotes: document.getElementById('swal-assign-notes').value
+                    }
+                }
             });
-            if (assignedTo) {
+
+            if (formValues && formValues.assignedTo) {
                 const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
-                await setDoc(doc(reportsRef, ticketId), { status: 'assigned', assignedTo: assignedTo }, { merge: true });
+                await setDoc(doc(reportsRef, ticketId), {
+                    status: 'assigned',
+                    assignedTo: formValues.assignedTo,
+                    assignmentNotes: formValues.assignmentNotes,
+                    assignedAt: new Date().toISOString()
+                }, { merge: true });
                 Swal.fire({ icon: 'success', title: 'มอบหมายงานสำเร็จ!', timer: 1500, showConfirmButton: false });
             }
         };
@@ -4211,11 +4730,26 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             const point = (window.speakerPoints || []).find(p => p.id === pointId);
             const locationName = point ? point.Position : 'ไม่ระบุตำแหน่ง';
 
+            const isAdmin = window.currentUser && window.currentUser.role === 'Admin';
+            const adminButtons = isAdmin ? `
+                <div class="grid grid-cols-1 gap-3 mt-6">
+                    <button id="fd-snapshot-btn" onclick="window.saveQRCodeAsImage()" class="bg-green-600 text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-green-700 active:scale-95 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-download"></i> บันทึกรูปภาพ (Save Image)
+                    </button>
+                    <button onclick="window.printQRCodeCard('${pointId}', '${pointNumber}', '${locationName}')" 
+                            class="bg-blue-800 text-white py-3.5 rounded-2xl font-black shadow-lg hover:bg-blue-700 active:scale-95 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-print"></i> พิมพ์ใบติดเสา (Print Poster)
+                    </button>
+                </div>
+            ` : '';
+
             Swal.fire({
                 title: `QR Code แจ้งซ่อม จุดที่ #${pointNumber}`,
                 html: `<div id="capture-area" class="bg-white p-8 rounded-3xl border shadow-inner">
                             <div class="flex flex-col items-center">
-                                <img src="https://img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg" class="h-16 mb-4 filter drop-shadow-sm">
+                                <img src="https://images.weserv.nl/?url=img5.pic.in.th/file/secure-sv1/logo458ee4aa05680920.jpg" 
+                                    crossorigin="anonymous"
+                                    class="h-16 mb-4 filter drop-shadow-sm">
                                 <h4 class="font-black text-blue-900 text-lg mb-1">เทศบาลเมืองอุทัยธานี</h4>
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Smart PA Repair Request</p>
                                 <div id="qrcode-container" class="bg-white p-4 rounded-3xl border-4 border-blue-50 shadow-sm mb-6"></div>
@@ -4412,9 +4946,115 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                 return;
             }
             ticker.classList.remove('hidden');
-            content.innerHTML = items.map(a =>
-                `<span class="mx-8"><i class="fas fa-bullhorn mr-2 text-yellow-300"></i><strong>${a.title}</strong>${a.detail ? ` — ${a.detail}` : ''}</span>`
-            ).join('');
+            content.innerHTML = items.map(a => {
+                const dateStr = new Date(a.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                const detailSuffix = ` (โดย: ${a.contact || 'ประชาชน'}, ${dateStr})`;
+                return `<span class="mx-8"><i class="fas fa-bullhorn mr-2 text-yellow-300"></i><strong>${a.title}</strong>${a.detail ? ` — ${a.detail}` : ''}<span class="text-white/60 font-medium ml-1">${detailSuffix}</span></span>`;
+            }).join('');
+
+            // Also update Admin View if it's currently showing
+            if (document.getElementById('view-announcements-admin').classList.contains('active')) {
+                window.renderAnnouncementsAdmin();
+            }
+        };
+
+        window.renderAnnouncementsAdmin = function () {
+            const container = document.getElementById('adminAnnouncementsList');
+            if (!container) return;
+
+            const items = window.announcements || [];
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-20 bg-white/50 backdrop-blur rounded-[3rem] border-2 border-dashed border-slate-200">
+                        <i class="fas fa-newspaper text-6xl text-slate-200 mb-4"></i>
+                        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">ไม่มีรายการประชาสัมพันธ์ในขณะนี้</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = items.map(a => `
+                <div class="bg-white rounded-[2.5rem] p-8 shadow-lg border border-slate-50 flex flex-col h-full hover:shadow-2xl transition-all duration-300 group">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${a.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                            ${a.status === 'approved' ? '● อนุมัติแล้ว' : '○ รอการตรวจสอบ'}
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${new Date(a.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })}</span>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-xl font-black text-slate-900 mb-3 leading-tight group-hover:text-blue-800 transition-colors">${a.title}</h4>
+                        <p class="text-slate-500 text-sm leading-relaxed line-clamp-3">${a.detail || 'ไม่มีเนื้อหาเพิ่มเติม'}</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl mb-6">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">ผู้ฝากประกาศ</p>
+                        <p class="text-xs font-bold text-slate-700">${a.contact || 'ไม่ระบุชื่อ'}</p>
+                    </div>
+
+                    ${a.attachments && a.attachments.length > 0 ? `
+                        <div class="mb-6 flex gap-2">
+                             ${a.attachments.map(att => `
+                                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 border border-blue-100" title="${att.name}">
+                                    <i class="fas ${att.type.includes('pdf') ? 'fa-file-pdf' : 'fa-image'}"></i>
+                                </div>
+                             `).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="mt-auto pt-6 border-t border-slate-100 flex gap-3">
+                        ${a.status === 'pending' ? `
+                            <button onclick="window.updateAnnouncementStatus('${a.id}', 'approved')" class="flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-3 rounded-xl text-xs font-black shadow-lg hover:shadow-green-500/30 transition active:scale-95">
+                                <i class="fas fa-check mr-1"></i> อนุมัติ
+                            </button>
+                        ` : ''}
+                        <button onclick="window.deleteAnnouncement('${a.id}')" class="flex-1 bg-red-50 text-red-500 py-3 rounded-xl text-xs font-black hover:bg-red-500 hover:text-white transition active:scale-95">
+                            <i class="fas fa-trash-alt mr-1"></i> ลบทิ้ง
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.updateAnnouncementStatus = async function (id, status) {
+            try {
+                const annRef = collection(db, 'artifacts', appId, 'public', 'data', 'announcements');
+                await updateDoc(doc(annRef, id), { status: status });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'อนุมัติเรียบร้อย',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
+            }
+        };
+
+        window.deleteAnnouncement = async function (id) {
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: "เมื่อลบแล้วข้อมูลจะหายไปจากระบบทันที",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ใช่, ฉันต้องการลบ',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const annRef = collection(db, 'artifacts', appId, 'public', 'data', 'announcements');
+                    await deleteDoc(doc(annRef, id));
+                    Swal.fire({ icon: 'success', title: 'ลบรายการแล้ว', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+                } catch (error) {
+                    Swal.fire({ icon: 'error', title: 'ลบไม่ได้', text: error.message });
+                }
+            }
         };
 
         // --- WARP NAVIGATION LOGIC ---
@@ -4847,6 +5487,84 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             window.refreshAllViews();
             updateFilterIndicator();
         }
+
+        window.openAllMaintenanceModal = function () {
+            document.getElementById('allMaintenanceModal').classList.remove('hidden');
+            renderAllMaintenanceTable();
+        };
+
+        window.renderAllMaintenanceTable = function () {
+            const container = document.getElementById('all-maint-table-body');
+            const searchQuery = document.getElementById('all-maint-search')?.value.toLowerCase() || '';
+            if (!container) return;
+
+            const allMetadata = [];
+            (window.speakerPoints || []).forEach(point => {
+                if (point.Maintenance) {
+                    point.Maintenance.forEach(m => {
+                        allMetadata.push({
+                            ...m,
+                            pointId: point.id,
+                            pointNumber: point.Number,
+                            pointPosition: point.Position,
+                            pointOLT: point.OLT
+                        });
+                    });
+                }
+            });
+
+            // Sort by date descending
+            allMetadata.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const filtered = allMetadata.filter(m => {
+                return m.title.toLowerCase().includes(searchQuery) ||
+                    m.pointNumber.toString().includes(searchQuery) ||
+                    m.pointPosition.toLowerCase().includes(searchQuery) ||
+                    (m.technician || '').toLowerCase().includes(searchQuery);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium">ไม่พบข้อมูลประวัติที่ค้นหา</td></tr>';
+                return;
+            }
+
+            container.innerHTML = filtered.map(m => {
+                const dateStr = new Date(m.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+                const statusColor = m.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                    m.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition group">
+                        <td class="p-5 font-bold text-slate-700">${dateStr}</td>
+                        <td class="p-5">
+                            <p class="font-black text-blue-800">#${m.pointNumber}</p>
+                            <p class="text-[10px] text-slate-500 font-bold truncate w-40">${m.pointPosition}</p>
+                        </td>
+                        <td class="p-5">
+                            <p class="font-bold text-slate-800">${m.title}</p>
+                            <p class="text-[11px] text-slate-500 line-clamp-1">${m.desc || '-'}</p>
+                        </td>
+                        <td class="p-5 font-medium text-slate-600">${m.technician || m.reporter || '-'}</td>
+                        <td class="p-5 text-center">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${statusColor}">
+                                ${m.status || 'Completed'}
+                            </span>
+                        </td>
+                        <td class="p-5 text-center">
+                            <button onclick="window.manageMaintRecord('${m.pointId}')" class="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl hover:bg-blue-600 hover:text-white transition shadow-sm">
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        window.manageMaintRecord = function (pointId) {
+            document.getElementById('allMaintenanceModal').classList.add('hidden');
+            window.openPointModal(pointId);
+            setTimeout(() => { window.setPointTab('maintenance'); }, 300);
+        };
 
         window.onload = () => {
             showView('landing');
