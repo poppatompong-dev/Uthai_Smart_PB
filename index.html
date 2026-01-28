@@ -523,6 +523,11 @@
 
         /* Print Optimizations */
         @media print {
+            @page {
+                margin: 10mm;
+                size: A4;
+            }
+
             .no-print {
                 display: none !important;
             }
@@ -531,6 +536,39 @@
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                width: 100% !important;
+                height: 100% !important;
+                overflow: visible !important;
+            }
+
+            /* Hide everything except the modal content when printing from modal */
+            body.printing-modal #app,
+            body.printing-modal nav,
+            body.printing-modal .user-bar,
+            body.printing-modal #sidebar,
+            body.printing-modal #announcement-ticker {
+                display: none !important;
+            }
+
+            #fullDetailModal {
+                position: relative !important;
+                display: block !important;
+                inset: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                background: white !important;
+                z-index: 99999 !important;
+            }
+
+            #fullDetailContent {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: auto !important;
+                overflow: visible !important;
             }
 
             .modal-container {
@@ -538,51 +576,32 @@
                 height: auto !important;
                 box-shadow: none !important;
                 border: none !important;
-                position: relative !important;
-                width: 100% !important;
-                max-width: none !important;
-            }
-
-            .modal-body {
                 overflow: visible !important;
-                max-height: none !important;
-                height: auto !important;
-                padding: 0 !important;
             }
 
-            #reportModal {
-                position: absolute !important;
-                inset: 0 !important;
-                background: white !important;
+            /* Ensure Signature Section is visible and doesn't break awkwardly */
+            .signature-area {
                 display: block !important;
-                z-index: 9999 !important;
-                padding: 0 !important;
+                margin-top: 50px !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
+        }
 
-            .spa-view,
-            aside,
-            #mobile-menu-toggle,
-            #scroll-to-top,
-            .modal-header button {
-                display: none !important;
-            }
 
-            .print-only {
-                display: block !important;
-            }
 
-            .report-table,
-            .report-table th,
-            .report-table td {
-                border: 1px solid #000 !important;
-                color: black !important;
-            }
+        .report-table,
+        .report-table th,
+        .report-table td {
+            border: 1px solid #000 !important;
+            color: black !important;
+        }
 
-            .report-table thead tr {
-                background-color: #f1f5f9 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
+        .report-table thead tr {
+            background-color: #f1f5f9 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
         }
 
         .print-only {
@@ -621,9 +640,8 @@
                     alt="Logo" crossorigin="anonymous"
                     class="h-12 w-12 object-contain bg-white rounded-xl shadow-md p-0.5">
                 <div>
-                    <h1 class="font-bold text-lg text-white leading-tight">ระบบจัดชุดข้อมูลอัจฉริยะ ทม.อุทัยธานี</h1>
-                    <p class="text-[9px] text-blue-200 uppercase tracking-widest font-bold">Uthai Thani Smart PA •
-                        Control Hub</p>
+                    <h1 class="font-bold text-lg text-white leading-tight">ระบบข้อมูลอัจฉริยะ ทม.อุทัยธานี</h1>
+                    <p class="text-[9px] text-blue-200 uppercase tracking-widest font-bold">กองยุทธศาสตร์และงบประมาณ</p>
                 </div>
             </div>
         </div>
@@ -639,17 +657,17 @@
                     <i class="fas fa-th-large"></i> ศูนย์ควบคุม (Hub)
                 </button>
                 <button onclick="showView('public-report'); closeSidebarMobile();" data-view="public-report">
-                    <i class="fas fa-bullhorn"></i> แจ้งซ่อม / แจ้งเสีย
+                    <i class="fas fa-tools"></i> Smart Repair (แจ้งซ่อม)
                 </button>
                 <button onclick="window.openAnnouncementModal(); closeSidebarMobile();">
-                    <i class="fas fa-newspaper"></i> ฝากประชาสัมพันธ์
+                    <i class="fas fa-bullhorn"></i> Citizen Voice (ฝากข่าว)
                 </button>
             </div>
 
             <!-- ADMIN MENU (Hidden by Default) -->
             <div class="admin-only-menu hidden">
                 <div class="border-t border-white/10 my-3"></div>
-                <p class="px-6 py-2 text-[10px] text-blue-300 uppercase font-bold tracking-widest">เมนูผู้ดูแลระบบ</p>
+                <p class="px-6 py-2 text-[10px] text-blue-300 uppercase font-bold tracking-widest">เมนูเจ้าหน้าที่</p>
                 <button onclick="showView('map'); closeSidebarMobile();" data-view="map">
                     <i class="fas fa-map-location-dot"></i> แผนที่
                 </button>
@@ -998,6 +1016,13 @@
                                     </select>
                                 </div>
                             </div>
+
+                            <!-- Filter Toggle Button (Mobile) -->
+                            <button
+                                onclick="document.querySelector('.map-floating-panel .space-y-4').classList.toggle('hidden');"
+                                class="md:hidden w-full mt-2 bg-slate-100 text-slate-600 p-2 rounded-xl text-[10px] font-bold">
+                                <i class="fas fa-filter mr-1"></i> ย่อ/ขยาย ตัวกรอง
+                            </button>
                             <div id="map-filter-indicator" class="mt-4 pt-3 border-t border-slate-50 hidden">
                                 <p class="text-[10px] font-black text-blue-600 flex items-center gap-1.5">
                                     <i class="fas fa-info-circle"></i> Showing <span id="map-filtered-count">0</span>
@@ -1440,9 +1465,9 @@
                         <i class="fas fa-bullhorn text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-black text-slate-900 tracking-tight">แจ้งปัญหาจุดติดตั้ง</h3>
-                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">Public
-                            Report Form</p>
+                        <h3 class="text-lg font-black text-slate-900 tracking-tight">Smart Repair System</h3>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none">
+                            ระบบรับแจ้งเหตุขัดข้องอัจฉริยะ</p>
                     </div>
                 </div>
                 <button onclick="showView('landing')"
@@ -1454,9 +1479,9 @@
             <div class="max-w-lg mx-auto py-8 px-6 space-y-6">
                 <!-- Header Icon (Visual Only) -->
                 <div class="text-center py-4">
-                    <h2 class="text-2xl font-black text-slate-900">แจ้งปัญหาลำโพงขัดข้อง</h2>
-                    <p class="text-slate-500 font-medium text-sm mt-1">กรุณากรอกข้อมูลเพื่อแจ้งให้เจ้าหน้าที่เข้าตรวจสอบ
-                    </p>
+                    <h2 class="text-2xl font-black text-slate-900">แจ้งปัญหาเร่งด่วน 24 ชม.</h2>
+                    <p class="text-slate-500 font-bold text-sm mt-1">"เสียงของท่านคือการพัฒนาของเรา" <br>แจ้งให้เราทราบ
+                        เพื่อการแก้ไขที่รวดเร็วโดยทีมงานมืออาชีพ</p>
                 </div>
 
                 <!-- Report Form -->
@@ -2130,10 +2155,10 @@
             <div class="text-center space-y-2 mb-8">
                 <div
                     class="w-16 h-16 bg-blue-50 text-blue-800 rounded-3xl flex items-center justify-center text-2xl mx-auto mb-4 text-shadow-none">
-                    <i class="fas fa-lock text-shadow-none"></i>
+                    <i class="fas fa-chess-rook text-shadow-none"></i>
                 </div>
-                <h3 class="text-3xl font-black text-slate-900 tracking-tight text-shadow-none">Staff Access</h3>
-                <p class="text-slate-400 text-sm font-medium">กรุณายืนยันตัวตนเพื่อจัดการพิกัดระบบ</p>
+                <h3 class="text-3xl font-black text-slate-900 tracking-tight text-shadow-none">Authorized Access</h3>
+                <p class="text-slate-400 text-sm font-bold">กองยุทธศาสตร์และงบประมาณ</p>
             </div>
             <div class="space-y-4">
                 <input type="text" id="username" placeholder="Username"
@@ -2156,9 +2181,13 @@
                 <div class="flex items-center gap-3">
                     <div
                         class="w-10 h-10 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center text-xl">
-                        <i class="fas fa-newspaper"></i>
+                        <i class="fas fa-heart"></i>
                     </div>
-                    <h3 class="text-xl font-black text-slate-900 tracking-tight">ฝากประชาสัมพันธ์</h3>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-900 tracking-tight">Citizen Voice</h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                            พื้นที่ประชาสัมพันธ์เพื่อชุมชน</p>
+                    </div>
                 </div>
                 <button onclick="window.closeAnnouncementModal()"
                     class="text-slate-400 hover:text-slate-600 transition">
@@ -2167,7 +2196,11 @@
             </div>
 
             <div class="modal-body custom-scroll">
-                <p class="text-slate-400 text-sm font-medium mb-6">ข้อความจะแสดงบนหน้าเว็บไซต์หลังผ่านการตรวจสอบ</p>
+                <div class="bg-purple-50 p-4 rounded-2xl mb-6 border border-purple-100">
+                    <p class="text-purple-800 font-bold text-sm">"เรื่องราวดีๆ เริ่มต้นที่คุณ"</p>
+                    <p class="text-purple-600 text-xs mt-1">แบ่งปันข่าวสาร กิจกรรม หรือเรื่องราวน่าสนใจในชุมชน
+                        ผ่านช่องทางการสื่อสารของเทศบาล</p>
+                </div>
                 <form id="announcementForm" onsubmit="window.submitAnnouncement(event)" class="space-y-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2">หัวข้อ/เรื่อง <span
@@ -2237,40 +2270,95 @@
         }
     </style>
 
-    <!-- User CRUD Modal -->
+    <!-- User CRUD Modal (Premium) -->
     <div id="userModal"
-        class="hidden fixed inset-0 bg-slate-900/60 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print text-shadow-none">
-        <div class="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-slideUp text-shadow-none">
-            <h3 id="userModalTitle" class="text-3xl font-black text-slate-900 mb-8 tracking-tight">Authority Account
-            </h3>
-            <form id="userForm" onsubmit="window.saveUser(event)" class="space-y-5">
-                <input type="hidden" id="u-id">
-                <div class="space-y-1"><label class="text-[10px] font-black text-slate-400 uppercase ml-4">Full
-                        Name</label><input type="text" id="u-name" required
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none text-shadow-none text-shadow-none text-shadow-none">
+        class="hidden fixed inset-0 bg-slate-900/40 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print">
+        <div
+            class="bg-white/90 backdrop-blur-xl w-full max-w-md rounded-[2.5rem] shadow-2xl animate-slideUp border border-white/50 overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-900 to-blue-800 p-8 text-center relative overflow-hidden">
+                <div
+                    class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
                 </div>
-                <div class="space-y-1"><label
-                        class="text-[10px] font-black text-slate-400 uppercase ml-4">Username</label><input type="text"
-                        id="u-username" required
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none text-shadow-none text-shadow-none">
+                <div class="relative z-10">
+                    <div
+                        class="w-20 h-20 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl text-white shadow-lg border border-white/20">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3 id="userModalTitle" class="text-2xl font-black text-white tracking-tight">Authority Account</h3>
+                    <p class="text-blue-200 text-xs font-bold uppercase tracking-widest mt-1">Manage Access &
+                        Permissions</p>
                 </div>
-                <div class="space-y-1"><label
-                        class="text-[10px] font-black text-slate-400 uppercase ml-4">Password</label><input
-                        type="password" id="u-password" required
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none"></div>
-                <div class="space-y-1"><label
-                        class="text-[10px] font-black text-slate-400 uppercase ml-4">Role</label><select id="u-role"
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none">
-                        <option value="Staff">Officer</option>
-                        <option value="Admin">Administrator</option>
-                    </select></div>
-                <div class="flex gap-4 pt-8 border-t mt-4 text-shadow-none text-shadow-none text-shadow-none">
-                    <button type="submit"
-                        class="flex-1 bg-blue-800 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition text-shadow-none">บันทึกผู้ใช้</button>
-                    <button type="button" onclick="window.closeUserModal()"
-                        class="text-slate-400 px-6 font-bold uppercase text-xs">ยกเลิก</button>
-                </div>
-            </form>
+            </div>
+
+            <!-- Body -->
+            <div class="p-8">
+                <form id="userForm" onsubmit="window.saveUser(event)" class="space-y-5">
+                    <input type="hidden" id="u-id">
+
+                    <div class="group">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 pl-2">Full Name</label>
+                        <div class="relative">
+                            <span
+                                class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"><i
+                                    class="fas fa-id-card"></i></span>
+                            <input type="text" id="u-name" required placeholder="ชื่อ-นามสกุล"
+                                class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-700">
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 pl-2">Username</label>
+                        <div class="relative">
+                            <span
+                                class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"><i
+                                    class="fas fa-user-tag"></i></span>
+                            <input type="text" id="u-username" required placeholder="ชื่อผู้ใช้"
+                                class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-700">
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 pl-2">Password</label>
+                        <div class="relative">
+                            <span
+                                class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"><i
+                                    class="fas fa-lock"></i></span>
+                            <input type="password" id="u-password" required placeholder="รหัสผ่าน"
+                                class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-700">
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 pl-2">Role
+                            Permissions</label>
+                        <div class="relative">
+                            <span
+                                class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-colors"><i
+                                    class="fas fa-layer-group"></i></span>
+                            <select id="u-role"
+                                class="w-full bg-slate-50 border border-slate-100 pl-11 pr-4 py-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-bold text-slate-700 appearance-none">
+                                <option value="Officer">Officer (เจ้าหน้าที่ทั่วไป)</option>
+                                <option value="Admin">Administrator (ผู้ดูแลระบบสูงสุด)</option>
+                            </select>
+                            <span
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"><i
+                                    class="fas fa-chevron-down text-xs"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-6 mt-4">
+                        <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-blue-700 to-blue-900 text-white py-4 rounded-xl font-black shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 active:scale-95 transition-all text-sm uppercase tracking-wide flex items-center justify-center gap-2">
+                            <i class="fas fa-save"></i> บันทึกข้อมูล
+                        </button>
+                        <button type="button" onclick="window.closeUserModal()"
+                            class="px-6 bg-slate-100 text-slate-500 py-4 rounded-xl font-bold hover:bg-slate-200 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -2577,64 +2665,83 @@
         </div>
     </div>
 
-    <!-- Maintenance Schedule Modal -->
+    <!-- Maintenance Schedule Modal (Premium) -->
     <div id="maintenanceScheduleModal"
-        class="hidden fixed inset-0 bg-slate-900/70 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print">
-        <div class="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl animate-slideUp">
-            <div class="text-center mb-8">
+        class="hidden fixed inset-0 bg-slate-900/60 z-[6000] flex items-center justify-center p-6 backdrop-blur-md no-print">
+        <div
+            class="bg-white/90 backdrop-blur-xl w-full max-w-lg rounded-[2.5rem] shadow-2xl animate-slideUp overflow-hidden border border-white/50">
+            <!-- Header -->
+            <div class="bg-gradient-to-br from-purple-700 to-indigo-800 p-8 text-center relative overflow-hidden">
                 <div
-                    class="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-700 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-xl">
-                    <i class="fas fa-calendar-plus text-white text-3xl"></i>
+                    class="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')]">
                 </div>
-                <h3 class="text-3xl font-black text-slate-900 tracking-tight">ตั้งกำหนดการบำรุงรักษา</h3>
-                <p class="text-slate-400 text-sm font-medium mt-1">Maintenance Schedule</p>
-            </div>
-            <div class="space-y-5">
-                <div class="space-y-1">
-                    <div class="flex justify-between items-center mb-1.5 ml-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">เลือกจุดติดตั้ง
-                            (Select Points)</label>
-                        <button onclick="toggleAllMaintPoints()"
-                            class="text-[10px] text-purple-600 font-black uppercase hover:underline">Select All</button>
+                <div class="relative z-10 flex flex-col items-center">
+                    <div
+                        class="w-20 h-20 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 text-3xl text-white shadow-lg border border-white/20">
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
-                    <div class="relative">
+                    <h3 class="text-2xl font-black text-white tracking-tight">Maintenance Schedule</h3>
+                    <p class="text-purple-200 text-xs font-bold uppercase tracking-widest mt-1">Assignments & Tasks</p>
+                </div>
+            </div>
+
+            <div class="p-8 space-y-5">
+                <!-- Points Selector -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center mb-1 px-1">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest"><i
+                                class="fas fa-map-marker-alt mr-1 text-purple-500"></i> เลือกจุดติดตั้ง (Target
+                            Points)</label>
+                        <button onclick="toggleAllMaintPoints()"
+                            class="text-[10px] text-purple-600 font-black uppercase hover:bg-purple-50 px-2 py-1 rounded transition-colors">Select
+                            All</button>
+                    </div>
+                    <div class="relative group">
                         <input type="text" id="maint-point-search" placeholder="ค้นหาจุดหรือพิกัด..."
                             onkeyup="filterMaintPoints()"
-                            class="w-full bg-slate-100 border-none px-5 py-3 rounded-t-2xl outline-none text-xs font-bold focus:ring-2 focus:ring-purple-500">
+                            class="w-full bg-slate-50 border border-slate-200 px-5 py-3 rounded-t-2xl outline-none text-xs font-bold focus:border-purple-500 focus:bg-white transition-all">
                         <div id="maint-point-list"
-                            class="w-full bg-slate-50 max-h-40 overflow-y-auto rounded-b-2xl border-t border-slate-200 custom-scroll p-2">
-                            <!-- Checkboxes will be injected here -->
-                            <div class="p-4 text-center text-slate-400 text-xs">กำลังโหลดจุด...</div>
+                            class="w-full bg-white max-h-48 overflow-y-auto rounded-b-2xl border-x border-b border-slate-200 custom-scroll p-2 shadow-inner">
+                            <div class="p-4 text-center text-slate-400 text-xs py-8">
+                                <i class="fas fa-spinner animate-spin mb-2"></i><br>กำลังโหลดข้อมูล...
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">วันที่กำหนดการ</label>
-                    <input type="date" id="maint-date"
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-400 uppercase ml-2">วันที่กำหนดการ</label>
+                        <input type="date" id="maint-date"
+                            class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 font-bold text-slate-700 text-sm">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ประเภทงาน</label>
+                        <select id="maint-type"
+                            class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 font-bold text-slate-700 text-sm">
+                            <option value="routine">ตรวจสอบประจำ</option>
+                            <option value="repair">แจ้งซ่อม (Repair)</option>
+                            <option value="upgrade">อัพเกรด (Upgrade)</option>
+                            <option value="cleaning">ทำความสะอาด</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ประเภทการบำรุงรักษา</label>
-                    <select id="maint-type"
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                        <option value="routine">ตรวจสอบประจำ (Routine Check)</option>
-                        <option value="repair">ซ่อมบำรุง (Repair)</option>
-                        <option value="upgrade">อัพเกรดอุปกรณ์ (Upgrade)</option>
-                        <option value="cleaning">ทำความสะอาด (Cleaning)</option>
-                    </select>
+                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">รายละเอียด / หมายเหตุ</label>
+                    <textarea id="maint-notes" placeholder="ระบุรายละเอียดเพิ่มเติม..." rows="3"
+                        class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 font-medium resize-none text-sm"></textarea>
                 </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">หมายเหตุ</label>
-                    <textarea id="maint-notes" placeholder="รายละเอียดเพิ่มเติม..." rows="3"
-                        class="w-full bg-slate-50 border-none p-5 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 font-medium resize-none"></textarea>
-                </div>
-                <div class="flex gap-4 pt-6 border-t">
+
+                <div class="flex gap-3 pt-6 border-t border-slate-100">
                     <button onclick="window.saveMaintenanceSchedule()"
-                        class="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition flex items-center justify-center gap-2">
-                        <i class="fas fa-save"></i> บันทึกกำหนดการ
+                        class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-700 text-white py-4 rounded-xl font-black shadow-lg shadow-purple-500/30 active:scale-95 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i> บันทึกข้อมูล
                     </button>
                     <button onclick="window.closeMaintenanceScheduleModal()"
-                        class="bg-slate-100 text-slate-500 px-8 py-4 rounded-2xl font-bold hover:bg-slate-200 transition">ยกเลิก</button>
+                        class="bg-slate-100 text-slate-500 px-6 py-4 rounded-xl font-bold hover:bg-slate-200 transition">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2903,14 +3010,24 @@
             if (!auth.currentUser) return;
             try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'speaker_points', id));
-                window.refreshAllViews();
                 window.closePointModal();
+                window.refreshAllViews();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ลบข้อมูลสำเร็จ',
+                    html: `<p class="text-slate-600">จุดติดตั้งถูกลบออกจากระบบแล้ว</p>`,
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
             } catch (e) {
                 console.error(e);
                 Swal.fire({
                     icon: 'error',
                     title: 'ลบไม่สำเร็จ',
-                    text: 'เกิดข้อผิดพลาดในการลบข้อมูล',
+                    text: 'เกิดข้อผิดพลาด: ' + e.message,
                     confirmButtonColor: '#ef4444'
                 });
             }
@@ -2951,24 +3068,123 @@
                 if (id) await setDoc(doc(usersRef, id), userData, { merge: true });
                 else await addDoc(usersRef, userData);
                 window.closeUserModal();
+
+                // Show Action Summary Modal
+                const actionType = id ? 'อัปเดตข้อมูล' : 'เพิ่มผู้ใช้ใหม่';
+
+                // Construct list HTML
+                let userListHtml = '<div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto custom-scrollbar mt-4 border-t pt-4">';
+                // Wait briefly for snapshot to likely update or just use current list + new one logic (but snapshot is async)
+                // We'll trust the snapshot listener updates shortly, but for the modal we might need to show what we have + the new one if not yet there.
+                // Simpler: Show the current list from window.appUsers, it might update in background.
+                // Actually user requested "รายการผู้ใช้ที่ได้ทำการเพิ่งไปล่าสุด และรายชื่อผู้ใช้รวมล่าสุดด้วย"
+
+                // Let's create a nice summary
                 Swal.fire({
+                    title: '<strong>บันทึกข้อมูลสำเร็จ</strong>',
                     icon: 'success',
-                    title: 'บันทึกผู้ใช้สำเร็จ!',
-                    text: 'ข้อมูลผู้ใช้งานถูกบันทึกแล้ว',
-                    timer: 2000,
-                    timerProgressBar: true,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end'
+                    html: `
+                        <div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
+                            <p class="text-xs font-bold text-slate-400 uppercase mb-1">การกระทำล่าสุด</p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center font-bold">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-800">${actionType}</p>
+                                    <p class="text-xs text-slate-500">Username: ${userData.username} (${userData.role})</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                           <p class="text-xs font-bold text-slate-400 uppercase mb-2">บัญชีผู้ใช้ทั้งหมดในระบบ (Real-time)</p>
+                           <div id="swal-user-list-preview" class="space-y-2">
+                                <div class="text-center text-xs text-slate-400"><i class="fas fa-spinner animate-spin"></i> กำลังโหลดรายการ...</div>
+                           </div>
+                        </div>
+                    `,
+                    width: '400px',
+                    showConfirmButton: true,
+                    confirmButtonText: 'ตกลง',
+                    confirmButtonColor: '#1e40af',
+                    didOpen: () => {
+                        // Update list inside Swal
+                        const updateList = () => {
+                            const listContainer = document.getElementById('swal-user-list-preview');
+                            if (listContainer && window.appUsers) {
+                                const content = window.appUsers.map(u =>
+                                    `<div class="flex justify-between items-center text-xs p-2 bg-white border border-slate-100 rounded-lg shadow-sm">
+                                        <span class="font-bold text-slate-700">${u.username}</span>
+                                        <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px]">${u.role}</span>
+                                      </div>`
+                                ).join('');
+                                listContainer.innerHTML = content || '<p class="text-xs text-slate-300">ไม่มีข้อมูล</p>';
+                                // Add total count
+                                listContainer.insertAdjacentHTML('afterbegin', `<p class="text-xs text-blue-600 font-bold mb-2 text-right">รวม ${window.appUsers.length} บัญชี</p>`);
+                            }
+                        };
+                        // Initial update
+                        setTimeout(updateList, 500);
+                        // Check again in a second
+                        setTimeout(updateList, 1500);
+                    }
                 });
+
             } catch (e) {
                 console.error(e);
                 Swal.fire({
                     icon: 'error',
                     title: 'บันทึกไม่สำเร็จ',
-                    text: 'เกิดข้อผิดพลาดในการบันทึกผู้ใช้',
+                    text: 'เกิดข้อผิดพลาดในการบันทึกผู้ใช้: ' + e.message,
                     confirmButtonColor: '#ef4444'
                 });
+            }
+        };
+
+        window.deleteUserFromDB = async (id) => {
+            if (!auth.currentUser) return;
+
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบผู้ใช้?',
+                text: "สิทธิ์การใช้งานของผู้ใช้นี้จะถูกเพิกถอนทันที",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fas fa-user-times mr-2"></i>ลบผู้ใช้',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'กำลังประมวลผล...',
+                    didOpen: () => Swal.showLoading()
+                });
+
+                try {
+                    const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
+                    await deleteDoc(doc(usersRef, id));
+
+                    // Explicitly remove from local state immediately to reflect changes
+                    if (window.appUsers) {
+                        window.appUsers = window.appUsers.filter(u => u.id !== id);
+                    }
+                    window.renderUsers(); // Immediate UI update
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ลบผู้ใช้สำเร็จ',
+                        text: 'ระบบได้อัปเดตรายการแล้ว',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire('Error', 'ไม่สามารถลบผู้ใช้ได้: ' + e.message, 'error');
+                }
             }
         };
 
@@ -2999,13 +3215,37 @@
 
         window.deleteBoundaryFromDB = async () => {
             if (!auth.currentUser) return;
-            try {
-                const boundRef = collection(db, 'artifacts', appId, 'public', 'data', 'boundary');
-                await deleteDoc(doc(boundRef, 'city_boundary'));
-                alert("ลบขอบเขตเรียบร้อย");
-            } catch (e) {
-                console.error(e);
-                alert("ลบไม่สำเร็จ");
+
+            const result = await Swal.fire({
+                title: 'ลบเส้นขอบเขต?',
+                text: "เส้นขอบเขตเทศบาลจะหายไปจากแผนที่",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ลบทิ้ง',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const boundRef = collection(db, 'artifacts', appId, 'public', 'data', 'boundary');
+                    await deleteDoc(doc(boundRef, 'city_boundary'));
+
+                    if (window.boundaryLayer) window.boundaryLayer.remove();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ลบขอบเขตเรียบร้อย',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire('Error', 'ลบไม่สำเร็จ: ' + e.message, 'error');
+                }
             }
         };
     </script>
@@ -3033,10 +3273,29 @@
             document.querySelectorAll('.spa-view').forEach(v => v.classList.remove('active'));
 
             // 2. Role enforcement: Hide public menu for logged in admin users
-            if (currentUser && currentUser.role === 'Admin') {
+            // 2. Role enforcement
+            if (currentUser && (currentUser.role === 'Admin' || currentUser.role === 'Officer')) {
+                // Show Admin Menu
+                const adminMenu = document.querySelector('.admin-only-menu');
+                if (adminMenu) adminMenu.classList.remove('hidden');
+
+                // Hide Public Menu
                 const publicMenu = document.getElementById('public-menu-group');
                 if (publicMenu) publicMenu.classList.add('hidden');
+
+                // Role Logic: Officer vs Admin
+                // Both roles now have full access as per latest requirement
+                // Hide User Management Button if needed, BUT user requested equal rights. 
+                // We will only hide developer menu stuff if not specifically requested, but generally "menus including map" -> Admin
+                // We will basically skip the hiding logic.
+                const navUsers = document.getElementById('nav-users');
+                if (navUsers) navUsers.classList.remove('hidden');
+                document.querySelectorAll('.super-admin-only').forEach(el => el.classList.remove('hidden'));
+
             } else {
+                // Public
+                const adminMenu = document.querySelector('.admin-only-menu');
+                if (adminMenu) adminMenu.classList.add('hidden');
                 const publicMenu = document.getElementById('public-menu-group');
                 if (publicMenu) publicMenu.classList.remove('hidden');
             }
@@ -3553,7 +3812,7 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
             // Hide header buttons temporarily for snapshot
             const header = element.querySelector('.no-print');
-            header.style.display = 'none';
+            if (header) header.style.display = 'none';
 
             Swal.fire({
                 title: 'กำลังสร้างภาพ Snapshot...',
@@ -3561,21 +3820,25 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                 didOpen: () => Swal.showLoading()
             });
 
+            // Use slightly different config to avoid timeouts/cors issues
             html2canvas(element, {
-                scale: 2, // High quality
+                scale: 2,
                 useCORS: true,
+                allowTaint: true,
                 logging: false,
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                ignoreElements: (el) => el.classList.contains('no-print')
             }).then(canvas => {
-                header.style.display = 'flex'; // Restore header
+                if (header) header.style.display = 'flex'; // Restore header
                 const link = document.createElement('a');
                 link.download = `Registry_Point_${pointNum}_Snapshot.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 Swal.fire({ icon: 'success', title: 'บันทึกภาพสำเร็จ!', timer: 1500, showConfirmButton: false });
             }).catch(err => {
-                header.style.display = 'flex';
-                Swal.fire({ icon: 'error', title: 'บันทึกภาพล้มเหลว', text: err.message });
+                if (header) header.style.display = 'flex';
+                console.error("Snapshot Error:", err);
+                Swal.fire({ icon: 'error', title: 'บันทึกภาพล้มเหลว', text: 'Browser Error: ' + err.message });
             });
         };
 
@@ -4061,7 +4324,15 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             const file = event.target.files[0];
             if (!file) return;
 
-            if (file.size > 2000000) { alert("ไฟล์ใหญ่เกินไป กรุณาใช้ไฟล์ไม่เกิน 2MB"); return; }
+            if (file.size > 2000000) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไฟล์ขนาดใหญ่เกินไป',
+                    text: 'กรุณาอัปโหลดไฟล์ขนาดไม่เกิน 2MB',
+                    confirmButtonColor: '#eab308'
+                });
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -4122,7 +4393,15 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             const cost = document.getElementById('m-cost').value;
             const editIndex = document.getElementById('m-edit-index').value;
 
-            if (!date || !title) { alert("กรุณาระบุวันที่และหัวข้อ"); return; }
+            if (!date || !title) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ข้อมูลไม่ครบถ้วน',
+                    text: 'กรุณาระบุวันที่และหัวข้อการบำรุงรักษา',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
 
             const newRecord = {
                 id: Date.now().toString(36) + Math.random().toString(36).substr(2),
@@ -4159,10 +4438,22 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             window.modalScrollToTop('pointModal');
         };
 
-        window.deleteMaintenanceLog = function (index) {
-            if (confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
+        window.deleteMaintenanceLog = async function (index) {
+            const result = await Swal.fire({
+                title: 'ยืนยันลบรายการ?',
+                text: "ข้อมูลการบำรุงรักษานี้จะหายไปถาวร",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ลบทิ้ง',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (result.isConfirmed) {
                 tempMaintenance.splice(index, 1);
                 renderMaintenanceTimeline();
+                Swal.fire({ icon: 'success', title: 'ลบเรียบร้อย', toast: true, position: 'top-end', showConfirmButton: false, timer: 1000 });
             }
         };
 
@@ -4303,25 +4594,28 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
         window.deletePoint = function () {
             Swal.fire({
+                title: 'ยืนยันการลบจุดติดตั้ง?',
+                html: 'เมื่อลบแล้วข้อมูลจะหายไปจากระบบทันที<br><span class="text-sm text-red-500">(Cannot undone)</span>',
                 icon: 'warning',
-                title: 'ยืนยันการลบ?',
-                text: 'คุณต้องการลบจุดพิกัดนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: '<i class="fas fa-trash mr-1"></i> ลบข้อมูล',
-                cancelButtonText: 'ยกเลิก'
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i>ลบข้อมูลทันที',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true,
+                focusCancel: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const id = document.getElementById('f-id').value;
-                    window.deletePointFromDB(id);
+                    // Show Loading
                     Swal.fire({
-                        icon: 'success',
-                        title: 'ลบข้อมูลสำเร็จ!',
-                        text: 'จุดพิกัดถูกลบออกจากระบบแล้ว',
-                        timer: 1500,
-                        showConfirmButton: false
+                        title: 'กำลังลบข้อมูล...',
+                        html: 'กรุณารอสักครู่ ระบบกำลังอัปเดตฐานข้อมูล',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
                     });
+
+                    const id = document.getElementById('f-id').value;
+                    window.deletePointFromDB(id); // Handles success modal inside
                 }
             });
         };
@@ -4361,7 +4655,32 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
 
         window.renderUsers = function () {
             const c = document.getElementById('userListContainer'); if (!c) return;
-            c.innerHTML = (window.appUsers || []).map(u => `<div class="bg-white p-8 rounded-[2rem] border border-slate-50 flex justify-between items-center shadow-sm text-shadow-none text-shadow-none"><div class="flex items-center space-x-5 text-shadow-none text-shadow-none"><div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-lg text-shadow-none">${u.username[0].toUpperCase()}</div><div><h4 class="font-bold text-slate-800 text-lg leading-none">${u.name}</h4><p class="text-[10px] text-slate-400 uppercase font-black mt-1">Username: ${u.username} • Role: ${u.role}</p></div></div><div class="flex space-x-3 text-shadow-none"><button class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition" onclick="window.openUserModal('${u.id}')"><i class="fas fa-edit text-shadow-none"></i></button><button class="w-12 h-12 bg-red-50 text-red-400 rounded-2xl hover:bg-red-600 hover:text-white transition" onclick="alert('Delete action triggered')"><i class="fas fa-trash-alt text-shadow-none text-shadow-none"></i></button></div></div>`).join('');
+
+            // c.innerHTML check removed - Officers allowed
+
+            c.innerHTML = (window.appUsers || []).map(u => `<div class="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-50 flex flex-col md:flex-row justify-between items-center shadow-sm text-shadow-none gap-4">
+                <div class="flex items-center space-x-5 w-full md:w-auto">
+                    <div class="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-200">
+                        ${u.username ? u.username[0].toUpperCase() : '?'}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg leading-none">${u.name}</h4>
+                        <p class="text-[10px] text-slate-400 uppercase font-black mt-1">
+                            <span class="bg-slate-100 px-2 py-0.5 rounded text-slate-500">Username: ${u.username}</span> 
+                            <span class="ml-1 ${u.role === 'Admin' ? 'text-blue-600' : 'text-green-600'}">Role: ${u.role}</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex space-x-3 w-full md:w-auto justify-end">
+                    <button class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition shadow-sm" onclick="window.openUserModal('${u.id}')" title="แก้ไข">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${u.id !== (currentUser ? currentUser.id : '') ? `
+                    <button class="w-12 h-12 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition shadow-sm" onclick="window.deleteUserFromDB('${u.id}')" title="ลบผู้ใช้">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>` : ''}
+                </div>
+            </div>`).join('');
         };
 
         // --- Developer Utils ---
@@ -4377,11 +4696,21 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             textArea.select();
             try {
                 const successful = document.execCommand('copy');
-                if (successful) alert('คัดลอกสำเร็จ!');
-                else alert('คัดลอกไม่สำเร็จ โปรดกด Ctrl+C');
+                if (successful) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'คัดลอกรหัสสำเร็จ!',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'คัดลอกไม่สำเร็จ', text: 'โปรดกด Ctrl+C เพื่อคัดลอกด้วยตนเอง' });
+                }
             } catch (err) {
                 console.error('Fallback copy failed', err);
-                alert('ไม่สามารถคัดลอกอัตโนมัติได้');
+                Swal.fire({ icon: 'error', title: 'Error', text: 'ไม่สามารถคัดลอกอัตโนมัติได้' });
             }
             document.body.removeChild(textArea);
         };
@@ -4565,6 +4894,19 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
                             <p class="text-xs text-blue-600 font-medium">${t.assignmentNotes || 'รอระบุภารกิจ...'}</p>
                         </div>
                         ` : ''}
+                        ${t.status === 'completed' && t.resolutionNotes ? `
+                        <div class="space-y-2 bg-green-50/50 p-4 rounded-xl border border-green-100/50 col-span-1 md:col-span-2">
+                            <p class="text-[10px] font-black text-green-600 uppercase tracking-widest">รายงานผลการซ่อม (Resolution Report)</p>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
+                                <div>
+                                     <p class="text-xs font-bold text-green-800">ดำเนินการเรียบร้อย</p>
+                                     <p class="text-sm text-green-700 font-medium leading-relaxed mt-1">${t.resolutionNotes}</p>
+                                     <p class="text-[10px] text-green-500 mt-2 font-bold uppercase"><i class="fas fa-clock mr-1"></i> ปิดงานเมื่อ: ${new Date(t.resolvedAt).toLocaleString('th-TH')}</p>
+                                </div>
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
 
                     <div class="flex justify-end gap-2 mt-2">
@@ -4582,18 +4924,42 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
         window.deleteTicket = async function (id) {
             const result = await Swal.fire({
                 title: 'ยืนยันการลบรายการ?',
-                text: "ข้อมูลการแจ้งซ่อมนี้จะหายไปจากฐานข้อมูล",
+                html: 'ข้อมูลการแจ้งซ่อมนี้จะถูกลบถาวร <br><span class="text-sm text-red-500">(Irreversible Action)</span>',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                confirmButtonText: 'ลบข้อมูล'
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i>ลบข้อมูล',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true
             });
 
             if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'กำลังลบข้อมูล...',
+                    didOpen: () => Swal.showLoading()
+                });
+
                 try {
                     const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
                     await deleteDoc(doc(reportsRef, id));
-                    Swal.fire({ icon: 'success', title: 'ลบรายการแล้ว', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+
+                    // Local Refresh if needed (though onSnapshot usually handles it)
+                    // If window.publicReports is used, we can filter it locally
+                    if (window.publicReports) {
+                        window.publicReports = window.publicReports.filter(r => r.id !== id);
+                    }
+                    window.renderTickets(); // Immediate update
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ลบรายการสำเร็จ',
+                        text: 'ระบบได้อัปเดตข้อมูลลิสต์แล้ว',
+                        toast: true,
+                        position: 'top-end',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } catch (e) {
                     Swal.fire({ icon: 'error', title: 'ลบไม่ได้', text: e.message });
                 }
@@ -4663,24 +5029,34 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             const options = officers.map(o => `<option value="${o.id}">${o.name} (${o.role})</option>`).join('');
 
             const { value: formValues } = await Swal.fire({
-                title: 'มอบหมายงานและรายละเอียด',
+                title: '<div class="text-left border-b border-indigo-100 pb-4 mb-4"><span class="bg-indigo-100 text-indigo-700 p-2 rounded-lg text-lg mr-2"><i class="fas fa-tasks"></i></span> <span class="text-2xl font-black text-slate-800 tracking-tight">มอบหมายงาน</span><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 ml-11">Assign Task & Responsibility</p></div>',
                 html: `
-                    <div class="text-left space-y-4">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ผู้รับผิดชอบ (Assignee)</label>
-                            <select id="swal-assign-select" class="swal2-input !mt-1 !w-full">${options}</select>
+                    <div class="text-left space-y-5 px-1 py-2">
+                         <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                            <label class="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2"><i class="fas fa-user-shield mr-1"></i> ผู้รับผิดชอบ (Assignee)</label>
+                            <div class="relative">
+                                <select id="swal-assign-select" class="w-full bg-white border border-indigo-200 text-slate-700 text-sm font-bold rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none appearance-none">${options}</select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-indigo-500"><i class="fas fa-chevron-down text-xs"></i></div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">ภารกิจที่รับผิดชอบ (Work Responsibility)</label>
-                            <textarea id="swal-assign-notes" class="swal2-textarea !mt-1 !w-full" placeholder="ระบุรายละเอียดงานที่ต้องทำ..."></textarea>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">รายละเอียดภารกิจ (Notes)</label>
+                            <textarea id="swal-assign-notes" rows="3" class="block p-4 w-full text-sm text-slate-700 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none font-medium" placeholder="ระบุรายละเอียดงานที่ต้องทำอย่างชัดเจน..."></textarea>
                         </div>
                     </div>
                 `,
                 focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonText: 'บันทึกการมอบหมาย',
+                confirmButtonText: '<i class="fas fa-paper-plane mr-2"></i>บันทึกการมอบหมาย',
                 cancelButtonText: 'ยกเลิก',
-                confirmButtonColor: '#1e40af',
+                confirmButtonColor: '#4338ca', // Indigo-700
+                cancelButtonColor: '#94a3b8',
+                customClass: {
+                    popup: 'rounded-[2rem] shadow-2xl p-0 overflow-hidden',
+                    title: 'p-8 pt-6 !mb-0 text-left',
+                    htmlContainer: '!m-0 p-8 pt-0',
+                    actions: 'p-6 bg-slate-50 border-t border-slate-100'
+                },
                 preConfirm: () => {
                     return {
                         assignedTo: document.getElementById('swal-assign-select').value,
@@ -4690,36 +5066,86 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             });
 
             if (formValues && formValues.assignedTo) {
-                const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
-                await setDoc(doc(reportsRef, ticketId), {
-                    status: 'assigned',
-                    assignedTo: formValues.assignedTo,
-                    assignmentNotes: formValues.assignmentNotes,
-                    assignedAt: new Date().toISOString()
-                }, { merge: true });
-                Swal.fire({ icon: 'success', title: 'มอบหมายงานสำเร็จ!', timer: 1500, showConfirmButton: false });
+                // Show Loading
+                Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+
+                try {
+                    const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
+                    await setDoc(doc(reportsRef, ticketId), {
+                        status: 'assigned',
+                        assignedTo: formValues.assignedTo,
+                        assignmentNotes: formValues.assignmentNotes,
+                        assignedAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    window.renderTickets(); // Immediate Request
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'มอบหมายงานสำเร็จ!',
+                        text: 'ระบบได้ส่งต่อใบงานให้เจ้าหน้าที่แล้ว',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                } catch (e) {
+                    Swal.fire('Error', e.message, 'error');
+                }
             }
         };
 
         window.openCompleteTicketModal = async function (ticketId) {
             const { value: notes } = await Swal.fire({
-                title: 'บันทึกการซ่อมเสร็จ',
-                input: 'textarea',
-                inputLabel: 'รายละเอียดการซ่อม / อะไหล่ที่เปลี่ยน',
-                inputPlaceholder: 'เช่น เปลี่ยนไดรเวอร์, ซ่อมสายไฟ...',
+                title: '<div class="text-left border-b border-green-100 pb-4 mb-4"><span class="bg-green-100 text-green-700 p-2 rounded-lg text-lg mr-2"><i class="fas fa-check-circle"></i></span> <span class="text-2xl font-black text-slate-800 tracking-tight">ปิดงานซ่อม</span><p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 ml-11">Complete Maintenance Ticket</p></div>',
+                html: `
+                    <div class="text-left space-y-2 px-1 py-1">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ผลการดำเนินการ / อะไหล่ที่เปลี่ยน</label>
+                        <textarea id="swal-complete-notes" rows="4" class="block p-4 w-full text-sm text-slate-700 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none font-medium" placeholder="เช่น เปลี่ยนไดรเวอร์, เดินสายไฟใหม่, ปรับทิศทาง..."></textarea>
+                    </div>
+                `,
+                focusConfirm: false,
                 showCancelButton: true,
-                confirmButtonText: 'บันทึกเสร็จสิ้น',
+                confirmButtonText: '<i class="fas fa-clipboard-check mr-2"></i>บันทึกผลงาน',
                 cancelButtonText: 'ยกเลิก',
-                confirmButtonColor: '#16a34a'
+                confirmButtonColor: '#15803d', // Green-700
+                cancelButtonColor: '#94a3b8',
+                customClass: {
+                    popup: 'rounded-[2rem] shadow-2xl p-0 overflow-hidden',
+                    title: 'p-8 pt-6 !mb-0 text-left',
+                    htmlContainer: '!m-0 p-8 pt-0',
+                    actions: 'p-6 bg-slate-50 border-t border-slate-100'
+                },
+                preConfirm: () => {
+                    return document.getElementById('swal-complete-notes').value;
+                }
             });
+
             if (notes !== undefined) {
-                const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
-                await setDoc(doc(reportsRef, ticketId), {
-                    status: 'completed',
-                    resolvedAt: new Date().toISOString(),
-                    resolutionNotes: notes
-                }, { merge: true });
-                Swal.fire({ icon: 'success', title: 'บันทึกการซ่อมสำเร็จ!', timer: 1500, showConfirmButton: false });
+                Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+
+                try {
+                    const reportsRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
+                    await setDoc(doc(reportsRef, ticketId), {
+                        status: 'completed',
+                        resolvedAt: new Date().toISOString(),
+                        resolutionNotes: notes
+                    }, { merge: true });
+
+                    window.renderTickets(); // Immediate Update
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ปิดงานสำเร็จ!',
+                        text: 'บันทึกข้อมูลเข้าสู่ระบบแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                } catch (e) {
+                    Swal.fire('Error', e.message, 'error');
+                }
             }
         };
 
@@ -5386,7 +5812,15 @@ function uploadEvidence(base64Data, fileName, pointNumber) {
             return mapping[type] || type;
         }
 
-        window.handleImport = function (event) { alert("Bulk synchronization ready (Mock)"); }
+        window.handleImport = function (event) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Data Synchronization',
+                text: 'Bulk synchronization module is ready (Mock Mode)',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
         window.setMapLayer = function (t) {
             if (t === 'satellite') {
                 mapInstance.removeLayer(window.streetLayer);
